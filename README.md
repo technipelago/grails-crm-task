@@ -12,4 +12,13 @@ With CRM we mean features like:
 
 
 ## Task Management Plugin
-This plugin provides task/todo management features.
+This plugin provides services and persistence for task/todo management in Grails CRM.
+This is a "headless" plugin. For task management user interface see the
+[crm-task-ui](https://github.com/technipelago/grails-crm-task-ui.git) plugin.
+
+## Examples
+
+    def phoneCall = crmTaskService.createTaskType(name: "Phone call")
+
+    def later = use(groovy.time.TimeCategory) { new Date() + 60.minutes }
+    def task = crmTaskService.createTask(type: phoneCall, name: "Call Joe Average to discuss presentation", startTime: later, true)
