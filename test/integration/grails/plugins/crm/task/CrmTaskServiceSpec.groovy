@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit
  */
 class CrmTaskServiceSpec extends grails.plugin.spock.IntegrationSpec {
 
+    def grailsApplication
     def crmTaskService
     def grailsEventsRegistry
     def crmAccountService
@@ -140,8 +141,10 @@ class CrmTaskServiceSpec extends grails.plugin.spock.IntegrationSpec {
             def tenant = crmSecurityService.createTenant(account, "Alarms")
             alarm = TenantUtils.withTenant(tenant.id) { crmTaskService.createFixedAlarm("Alarm!", null) }
         }
+        grailsApplication.config.crmTask.job.alarm.enabled = true
         def job = new CrmTaskAlarmJob()
         job.crmTaskService = crmTaskService
+        job.grailsApplication = grailsApplication
 
         when:
         job.execute()
