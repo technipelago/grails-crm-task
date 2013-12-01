@@ -103,14 +103,14 @@ class CrmTask {
     static embedded = ['address']
 
     static constraints = {
-        number(maxSize: 20, nullable:true, validator: {val, obj->
-            if(val) {
+        number(maxSize: 20, nullable: true, validator: { val, obj ->
+            if (val) {
                 def tenant = obj.tenantId ?: TenantUtils.tenant
                 withNewSession {
                     CrmTask.createCriteria().count() {
                         eq('tenantId', tenant)
                         eq('number', val)
-                        if(obj.id) {
+                        if (obj.id) {
                             ne('id', obj.id)
                         }
                     }
@@ -202,7 +202,11 @@ class CrmTask {
     // Lazy injection of service.
     private def getCrmCoreService() {
         if (_crmCoreService == null) {
-            _crmCoreService = this.getDomainClass().getGrailsApplication().getMainContext().getBean('crmCoreService')
+            synchronized (this) {
+                if (_crmCoreService == null) {
+                    _crmCoreService = this.getDomainClass().getGrailsApplication().getMainContext().getBean('crmCoreService')
+                }
+            }
         }
         _crmCoreService
     }
@@ -252,10 +256,10 @@ class CrmTask {
 
     List<Date> getDates() {
         def list = []
-        if(startTime) {
+        if (startTime) {
             list << startTime
         }
-        if(endTime) {
+        if (endTime) {
             list << endTime
         }
         return list
@@ -270,7 +274,7 @@ class CrmTask {
     }
 
     transient CrmContactInformation getContact() {
-        attenders?.find{it}?.getContactInformation()
+        attenders?.find { it }?.getContactInformation()
     }
 
     Duration getDuration() {
