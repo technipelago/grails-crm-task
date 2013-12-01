@@ -1,5 +1,7 @@
 package grails.plugins.crm.task
 
+import spock.lang.Ignore
+
 /**
  * Test import of tasks using the crm-import plugin.
  */
@@ -7,6 +9,7 @@ class CrmTaskImportSpec  extends grails.plugin.spock.IntegrationSpec {
 
     def crmImportService
 
+    @Ignore
     def "import some tasks"() {
         given:
         def file = File.createTempFile("crm", ".csv")
