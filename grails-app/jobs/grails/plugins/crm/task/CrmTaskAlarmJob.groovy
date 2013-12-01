@@ -25,20 +25,24 @@ class CrmTaskAlarmJob {
 
     static triggers = {
         simple name: 'crmTaskAlarm', startDelay: 90000, repeatInterval: 300000 // every five minutes
-        //cron name: 'crmTaskAlarm', cronExpression: "0 0 6,9,12,15,18,21 * * ?" // every three hours daytime
     }
 
     def group = 'crmTask'
 
+    def grailsApplication
     def crmTaskService
 
     def execute() {
-        for (due in crmTaskService.findDueAlarms()) {
-            // select status from crm_account where id = (select account_id from crm_tenant where id = ?)
-            def crmAccount = CrmAccount.find("from CrmAccount as a where a = (select account from CrmTenant as t where t.id = ?)", [due.tenantId])
-            if(crmAccount?.active) {
-                crmTaskService.triggerAlarm(due)
+        if(grailsApplication.config.crmTask.job.alarm.enabled) {
+            for (due in crmTaskService.findDueAlarms()) {
+                // select status from crm_account where id = (select account_id from crm_tenant where id = ?)
+                def crmAccount = CrmAccount.find("from CrmAccount as a where a = (select account from CrmTenant as t where t.id = ?)", [due.tenantId])
+                if(crmAccount?.active) {
+                    crmTaskService.triggerAlarm(due)
+                }
             }
+        } else {
+            log.debug "${getClass().getName()} is disabled because config [crmTask.job.alarm.enabled] is not true"
         }
     }
 }
