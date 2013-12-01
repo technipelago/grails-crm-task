@@ -1,4 +1,4 @@
-/*
+import grails.plugins.crm.task.CrmTask /*
  * Copyright (c) 2012 Goran Ehrsson.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
 
 class CrmTaskGrailsPlugin {
     def groupId = "grails.crm"
-    def version = "1.2.2"
+    def version = "1.2.3-SNAPSHOT"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def loadAfter = ['crmTags']
@@ -25,13 +25,44 @@ class CrmTaskGrailsPlugin {
             "grails-app/domain/test/TestEntity.groovy",
             "src/groovy/grails/plugins/crm/task/TestSecurityDelegate.groovy"
     ]
-    def title = "Grails CRM Task Management"
+    def title = "GR8 CRM Task Management"
     def author = "Goran Ehrsson"
     def authorEmail = "goran@technipelago.se"
-    def description = "Provides task management domain classes and services for Grails CRM."
+    def description = "Provides task management domain classes and services for GR8 CRM."
     def documentation = "https://github.com/technipelago/grails-crm-task"
     def license = "APACHE"
     def organization = [name: "Technipelago AB", url: "http://www.technipelago.se/"]
     def issueManagement = [system: "github", url: "https://github.com/technipelago/grails-crm-task/issues"]
     def scm = [url: "https://github.com/technipelago/grails-crm-task"]
+
+    def features = {
+        crmTask {
+            description "GR8 CRM Task Management"
+            link controller: "crmTask", action: "index"
+            permissions {
+                guest "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
+                partner "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
+                user "crmTask,crmCalendar:*"
+                admin "crmTask,crmTaskCategory,crmTaskStatus,crmTaskType,crmCalendar:*"
+            }
+            statistics { tenant ->
+                def total = CrmTask.countByTenantId(tenant)
+                def updated = CrmTask.countByTenantIdAndLastUpdatedGreaterThan(tenant, new Date() - 31)
+                def usage
+                if (total > 0) {
+                    def tmp = updated / total
+                    if (tmp < 0.1) {
+                        usage = 'low'
+                    } else if (tmp < 0.3) {
+                        usage = 'medium'
+                    } else {
+                        usage = 'high'
+                    }
+                } else {
+                    usage = 'none'
+                }
+                return [usage: usage, objects: total]
+            }
+        }
+    }
 }
