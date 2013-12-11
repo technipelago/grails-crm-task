@@ -33,7 +33,7 @@ class CrmTaskAlarmJob {
     def crmTaskService
 
     def execute() {
-        if(grailsApplication.config.crmTask.job.alarm.enabled) {
+        if(grailsApplication.config.crm.task.job.alarm.enabled) {
             for (due in crmTaskService.findDueAlarms()) {
                 // select status from crm_account where id = (select account_id from crm_tenant where id = ?)
                 def crmAccount = CrmAccount.find("from CrmAccount as a where a = (select account from CrmTenant as t where t.id = ?)", [due.tenantId])
