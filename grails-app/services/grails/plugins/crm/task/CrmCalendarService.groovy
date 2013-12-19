@@ -53,19 +53,20 @@ class CrmCalendarService {
         dates
     }
 
+    // TODO Remove hard coded magic numbers!
     @CompileStatic
     String getEventColor(final CrmTask event) {
         def color
         if(event.priority >= 90) {
-            color = "#9d261d"
+            color = "#c3325f" // Highest
         } else if(event.priority >= 60) {
-            color = "#f89406"
+            color = "#f9b936" // High
         } else if(event.priority >= 40) {
-            color = "#46a546"
+            color = "#71bf44" // Normal
         } else if(event.priority >= 20) {
-            color = "#0064cd"
+            color = "#00b6de" // Low
         } else {
-            color = "#999999"
+            color = "#999999" // Lowest
         }
         return color
     }
