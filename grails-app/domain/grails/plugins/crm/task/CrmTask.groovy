@@ -25,6 +25,7 @@ import grails.plugins.crm.core.UuidEntity
 import groovy.time.Duration
 import groovy.time.TimeCategory
 import groovy.time.TimeDuration
+import org.joda.time.DateTime
 
 /**
  * A calendar task.
@@ -159,7 +160,7 @@ class CrmTask {
         attenders sort: 'bookingDate', 'asc'
     }
 
-    static transients = ['date', 'dates', 'duration', 'durationMinutes', 'completed',
+    static transients = ['date', 'dates', 'eventDates', 'duration', 'durationMinutes', 'completed',
             'reference', 'contact', 'referenceDate', 'targetDate', 'alarm']
 
     static searchable = {
@@ -263,6 +264,24 @@ class CrmTask {
             list << endTime
         }
         return list
+    }
+
+    /**
+     * Get start time and end time as a pair of Joda DateTime instances.
+     *
+     * @return a list with two elements [start, end] (elements can be null)
+     */
+    List<DateTime> getEventDates() {
+        DateTime start
+        DateTime end
+        if(startTime) {
+            start = new DateTime(startTime)
+            end = start.plusMinutes(this.getDurationMinutes() ?: 30)
+        } else if(endTime) {
+            end = new DateTime(endTime)
+            start = end.minusMinutes(this.getDurationMinutes() ?: 30)
+        }
+        return [start, end]
     }
 
     void setReference(object) {
