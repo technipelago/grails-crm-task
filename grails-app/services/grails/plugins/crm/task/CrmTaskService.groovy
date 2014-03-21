@@ -147,6 +147,18 @@ class CrmTaskService {
         return task
     }
 
+    String deleteTask(CrmTask crmTask) {
+        def tombstone = crmTask.toString()
+        def id = crmTask.id
+        def tenant = crmTask.tenantId
+        def username = crmSecurityService.currentUser?.username
+        event(for: "crmTask", topic: "delete", fork: false, data: [id: id, tenant: tenant, user: username, name: tombstone])
+        crmTask.delete(flush:true)
+        log.debug "Deleted task #$id in tenant $tenant \"${tombstone}\""
+        event(for: "crmTask", topic: "deleted", data: [id: id, tenant: tenant, user: username, name: tombstone])
+        return tombstone
+    }
+
     CrmTaskAttenderStatus getAttenderStatus(String param) {
         CrmTaskAttenderStatus.findByParamAndTenantId(param, TenantUtils.tenant, [cache: true])
     }
