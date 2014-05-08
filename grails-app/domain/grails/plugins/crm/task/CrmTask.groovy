@@ -69,6 +69,7 @@ class CrmTask {
     boolean hidden = false
 
     String displayDate
+    String scope
 
     String referenceProperty
     int offsetType = OFFSET_NONE
@@ -123,6 +124,7 @@ class CrmTask {
         endTime(nullable: false, validator: { val, obj -> val >= obj.startTime })
         alarmTime(nullable: true)
         displayDate(maxSize: 40, nullable: true)
+        scope(maxSize: 40, nullable: true)
         username(maxSize: 80, nullable: true)
         name(maxSize: 80, blank: false)
         location(maxSize: 80, nullable: true)
@@ -157,10 +159,11 @@ class CrmTask {
         endTime index: 'crm_task_end_idx'
         alarmTime index: 'crm_task_alarm_idx'
         username index: 'crm_task_user_idx'
+        ref index: 'crm_task_ref_idx'
         attenders sort: 'bookingDate', 'asc'
     }
 
-    static transients = ['date', 'dates', 'eventDates', 'duration', 'durationMinutes', 'completed',
+    static transients = ['date', 'dates', 'eventDates', 'dateRange', 'duration', 'durationMinutes', 'completed',
             'reference', 'contact', 'referenceDate', 'targetDate', 'alarm']
 
     static searchable = {
@@ -173,6 +176,7 @@ class CrmTask {
             'endTime',
             'alarmTime',
             'displayDate',
+            'scope',
             'busy',
             'hidden',
             'referenceProperty',
@@ -247,7 +251,7 @@ class CrmTask {
      * Return the task start time. This is just an an alias for the 'startTime' property.
      * @return task start time
      */
-    Date getDate() {
+    transient Date getDate() {
         startTime ? new Date(startTime.time) : null
     }
 
@@ -255,7 +259,7 @@ class CrmTask {
         startTime = arg ? new Date(arg.time) : null
     }
 
-    List<Date> getDates() {
+    transient List<Date> getDates() {
         def list = []
         if (startTime) {
             list << startTime
@@ -271,7 +275,7 @@ class CrmTask {
      *
      * @return a list with two elements [start, end] (elements can be null)
      */
-    List<DateTime> getEventDates() {
+    transient List<DateTime> getEventDates() {
         DateTime start
         DateTime end
         if(startTime) {
@@ -282,6 +286,17 @@ class CrmTask {
             start = end.minusMinutes(this.getDurationMinutes() ?: 30)
         }
         return [start, end]
+    }
+
+    transient List<Date> getDateRange() {
+        if(startTime && endTime) {
+            return startTime..endTime
+        } else if(startTime) {
+            return [startTime]
+        } else if(endTime) {
+            return [endTime]
+        }
+        return []
     }
 
     void setReference(object) {
