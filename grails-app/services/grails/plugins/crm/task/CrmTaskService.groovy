@@ -273,6 +273,9 @@ class CrmTaskService {
             if (query.id) {
                 eq('id', Long.valueOf(query.id))
             }
+            if (query.number) {
+                ilike('number', SearchUtils.wildcard(query.number))
+            }
             if (query.name) {
                 ilike('name', SearchUtils.wildcard(query.name))
             }
@@ -297,6 +300,9 @@ class CrmTaskService {
                 eq('ref', crmCoreService.getReferenceIdentifier(query.reference))
             } else if (query.ref) {
                 eq('ref', query.ref)
+            } else if(query.referenceType) {
+                def rt = crmCoreService.getReferenceType(query.referenceType)
+                ilike('ref', rt + '@%')
             }
             if (query.fromDate && query.toDate) {
                 def timezone = query.timezone ?: TimeZone.getDefault()
@@ -308,14 +314,14 @@ class CrmTaskService {
                 }
             } else if (query.fromDate) {
                 def timezone = query.timezone ?: TimeZone.getDefault()
-                def d1 = DateUtils.parseDate(query.fromDate, timezone)
+                def d1 = query.fromDate instanceof Date ? query.fromDate : DateUtils.parseDate(query.fromDate, timezone)
                 or {
                     ge('startTime', d1)
                     gt('endTime', d1)
                 }
             } else if (query.toDate) {
                 def timezone = query.timezone ?: TimeZone.getDefault()
-                def d2 = DateUtils.parseDate(query.toDate, timezone)
+                def d2 = query.toDate instanceof Date ? query.toDate : DateUtils.parseDate(query.toDate, timezone)
                 or {
                     lt('startTime', d2)
                     le('endTime', d2)
