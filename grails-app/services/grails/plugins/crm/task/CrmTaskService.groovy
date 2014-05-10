@@ -220,7 +220,10 @@ class CrmTaskService {
 
     // TODO Move this method to CrmContactService in plugin crm-contact.
     CrmContactInformation createContactInformation(Map<String, Object> values) {
-        new CrmEmbeddedContact(values)
+        def m = new CrmEmbeddedContact()
+        def args = [m, values]
+        new BindDynamicMethod().invoke(m, 'bind', args.toArray())
+        return m
     }
 
     /**

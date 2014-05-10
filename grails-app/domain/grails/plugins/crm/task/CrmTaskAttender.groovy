@@ -74,6 +74,7 @@ class CrmTaskAttender {
             tmp.firstName = contactInfo.firstName
             tmp.lastName = contactInfo.lastName
             tmp.companyName = contactInfo.companyName
+            tmp.title = contactInfo.title
             tmp.address = contactInfo.fullAddress
             tmp.telephone = contactInfo.telephone
             tmp.email = contactInfo.email
