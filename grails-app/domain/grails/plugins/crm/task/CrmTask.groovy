@@ -308,6 +308,9 @@ class CrmTask {
     }
 
     transient CrmContactInformation getContact() {
+        if(ref?.startsWith('crmContact@')) {
+            return getReference()
+        }
         attenders?.find { it }?.getContactInformation()
     }
 
