@@ -73,6 +73,17 @@ class CrmTaskServiceSpec extends grails.plugin.spock.IntegrationSpec {
         task.duration.minutes == 0
     }
 
+    def "find by number"() {
+        given:
+        def t = crmTaskService.createTaskType(name: "Test", true)
+
+        when:
+        crmTaskService.createTask(number: 42, name: "Test", type: t, startTime: new Date(), duration: 60, true)
+
+        then:
+        crmTaskService.findByNumber("42")
+    }
+
     def "create fixed alarm"() {
         given:
         def cal = Calendar.getInstance()

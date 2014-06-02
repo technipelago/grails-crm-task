@@ -125,6 +125,10 @@ class CrmTaskService {
         CrmTask.findByIdAndTenantId(id, TenantUtils.tenant, [cache: true])
     }
 
+    CrmTask findByNumber(String number) {
+        CrmTask.findByNumberAndTenantId(number, TenantUtils.tenant)
+    }
+
     CrmTask createTask(Map params, boolean save = false) {
         def task = new CrmTask()
         def args = [task, params, [include: CrmTask.BIND_WHITELIST]]
