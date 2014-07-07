@@ -26,6 +26,7 @@ import groovy.time.Duration
 import groovy.time.TimeDuration
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
+import grails.plugins.selection.Selectable
 import grails.events.Listener
 import org.apache.commons.lang.StringUtils
 
@@ -236,6 +237,7 @@ class CrmTaskService {
      * @param params pagination parameters
      * @return List of CrmTask domain instances
      */
+    @Selectable
     def list(Map params) {
         list([:], params)
     }
@@ -247,6 +249,7 @@ class CrmTaskService {
      * @param params pagination parameters
      * @return List of CrmTask domain instances
      */
+    @Selectable
     def list(Map query, Map params) {
         def tenant = TenantUtils.tenant
         def ids
