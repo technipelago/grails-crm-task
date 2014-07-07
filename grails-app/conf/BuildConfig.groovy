@@ -39,11 +39,11 @@ grails.project.dependency.resolution = {
         compile "grails.crm:crm-core:latest.integration"
         compile "grails.crm:crm-contact:latest.integration"
         //compile "grails.crm:crm-import:latest.integration"
-        runtime "grails.crm:crm-security:latest.integration"
-        runtime "grails.crm:crm-tags:latest.integration"
+        compile "grails.crm:crm-security:latest.integration"
+        compile "grails.crm:crm-tags:latest.integration"
 
-        runtime ":sequence-generator:latest.integration"
-        compile ":selection:latest.integration"
+        compile ":sequence-generator:1.0"
+        compile ":selection:0.9.6"
     }
 }
 
