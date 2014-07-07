@@ -16,7 +16,7 @@ import grails.plugins.crm.task.CrmTask /*
 
 class CrmTaskGrailsPlugin {
     def groupId = "grails.crm"
-    def version = "1.2.9"
+    def version = "1.2.10"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def loadAfter = ['crmTags']
