@@ -1,5 +1,5 @@
-import grails.plugins.crm.task.CrmTask /*
- * Copyright (c) 2012 Goran Ehrsson.
+/*
+ * Copyright (c) 2014 Goran Ehrsson.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@ import grails.plugins.crm.task.CrmTask /*
  * limitations under the License.
  */
 
+import grails.plugins.crm.task.CrmTask
+
 class CrmTaskGrailsPlugin {
-    def groupId = "grails.crm"
-    def version = "1.2.10"
+    def groupId = ""
+    def version = "2.0.0"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def loadAfter = ['crmTags']
@@ -28,8 +30,8 @@ class CrmTaskGrailsPlugin {
     def title = "GR8 CRM Task Management"
     def author = "Goran Ehrsson"
     def authorEmail = "goran@technipelago.se"
-    def description = "Provides task management domain classes and services for GR8 CRM."
-    def documentation = "https://github.com/technipelago/grails-crm-task"
+    def description = "Provides task management domain classes and services for GR8 CRM applications."
+    def documentation = "http://gr8crm.github.io/plugins/crm-task/"
     def license = "APACHE"
     def organization = [name: "Technipelago AB", url: "http://www.technipelago.se/"]
     def issueManagement = [system: "github", url: "https://github.com/technipelago/grails-crm-task/issues"]
@@ -37,7 +39,7 @@ class CrmTaskGrailsPlugin {
 
     def features = {
         crmTask {
-            description "GR8 CRM Task Management"
+            description "Task Management"
             link controller: "crmTask", action: "index"
             permissions {
                 guest "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
