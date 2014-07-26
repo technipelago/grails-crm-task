@@ -1,6 +1,7 @@
 # Ignore Intellij IDEA files
 /.idea
 /*.iml
+/.gradle
 /cobertura.ser
 
 # Ignore build artifacts

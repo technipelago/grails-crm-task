@@ -22,3 +22,7 @@ This is a "headless" plugin. For task management user interface see the
 
     def later = use(groovy.time.TimeCategory) { new Date() + 60.minutes }
     def task = crmTaskService.createTask(type: phoneCall, name: "Call Joe Average to discuss presentation", startTime: later, true)
+
+### Documentation
+
+Complete documentation for this plugin can be found at [gr8crm.github.io](http://gr8crm.github.io/plugins/crm-task/)

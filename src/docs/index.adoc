@@ -1,0 +1,81 @@
+= GR8 CRM - Task Management Plugin
+Göran Ehrsson <goran@technipelago.se>
+:description: Official documentation for the GR8 CRM Task Management Plugin
+:keywords: groovy, grails, crm, gr8crm, documentation
+:toc:
+:numbered:
+:icons: font
+:imagesdir: ./images
+:source-highlighter: prettify
+:homepage: http://gr8crm.github.io
+:gr8crm: GR8 CRM
+:gr8source: https://github.com/technipelago/grails-crm-task
+:license: This plugin is licensed with http://www.apache.org/licenses/LICENSE-2.0.html[Apache License version 2.0]
+
+== Introduction
+
+{gr8crm} is a set of http://www.grails.org/[Grails Web Application Framework]
+plugins that makes it easy to develop web applications with CRM functionality.
+
+You can find more information about {gr8crm} on the main documentation site {homepage}.
+
+=== Customer Relationship Management
+
+Customer relationship management (CRM) is a system for managing a company’s interactions with current and future customers.
+It involves using technology to organize, automate and synchronize sales, marketing, customer service, and technical support.
+http://en.wikipedia.org/wiki/Customer_relationship_management[Wikipedia]
+
+The {gr8crm} "Ecosystem" currently contains over 40 Grails plugins. For a complete list of plugins see {homepage}.
+
+Each {gr8crm} plugin defines a http://martinfowler.com/bliki/BoundedContext.html[Bounded Context]
+that focus on one specific domain, for example *contact*, *project* or *document*.
+
+== Task Management Plugin
+
+A *Task* in {gr8crm} is a domain instance that represents a unit of work that has been done in the past or is scheduled to be done in the future.
+A task is very similar to a calendar item, it has a start time and a duration.
+Because tasks are so generic and flexible, {gr8crm} applications can use tasks in many ways. Here's are a list of real-world use-cases for tasks.
+
+- Calendar items
+- Scheduled meetings, with list of attenders
+- Conference or training registration
+- Telemarketing call items
+- Alarms on important dates
+- Time reporting
+- Event logging
+
+== Domain model
+
+In the center of the domain model is the +CrmTask+ domain class. It has a reference to +CrmTaskType+ that specifies
+what type of task it is (phone call, meeting, training, work item, etc.)
+A task also has a many-relation to +CrmTaskAttender+. This collection is used when you want to specify attenders on the task.
+The +CrmTaskAttender+ domain class has a reference to +CrmContact+ that represents the attender. This is the main reason why this
+plugin have a compile-time dependency on the +crm-contact+ plugin.
+
+image::task-domain.png[role="thumb"]
+
+== CrmTaskService
+
+The +CrmTaskService+ provides methods for task management.
+
+=== Create a task
+
+To create a new task you use +crmTaskService.createTask(Map values, boolean save)+. The only mandatory properties in +CrmTask+ are +name+, +type+, +startTime+ and +endTime+.
+Name is title of the task and type specifies the task type. Start time and end time can be set in a few different ways,
+the most common way is to set them both to +Date+ instances. Another option is to set +startTime+ and +duration+ in minutes.
+Setting the transient property +duration+ will set +endTime+ automatically.
+
+[source,groovy]
+.CreateSimpleTask.groovy
+----
+def type = crmTaskService.createTaskType(name: "Phone call", true)
+def task = crmTaskService.createTask(number: 42, name: "Call Sam and schedule meeting", type: type, startTime: new Date() + 1, duration: 30, true)
+----
+
+== License
+
+{license}
+
+== Source Code
+
+The source code for this plugin is available at {gr8source}
