@@ -246,6 +246,14 @@ def alarm(data) {
 }
 ----
 
+== Recurring tasks
+
+IMPORTANT: Recurring tasks are not implemented in the +crm-task+ plugin yet. The domain class +CrmTask+ have
+all required properties to support recurring tasks (I hope), but the logic to handle them is not implemented.
+My initial goal was to learn from Craig Burke and implement it like he describes in his blog post
+http://www.craigburke.com/2012/02/09/google-calendar-in-grails-part1-the-model.html[GOOGLE CALENDAR IN GRAILS^].
+Contributions are welcome!
+
 == License
 
 {license}
