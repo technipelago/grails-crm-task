@@ -297,7 +297,10 @@ class CrmTaskService {
             }
             if (query.type) {
                 type {
-                    ilike('name', SearchUtils.wildcard(query.type))
+                    or {
+                        ilike('name', SearchUtils.wildcard(query.type))
+                        eq('param', query.type)
+                    }
                 }
             }
             if (query.priority) {
@@ -396,7 +399,7 @@ class CrmTaskService {
      */
     CrmTask createFixedAlarm(String message, Object reference, Date date = null, Integer hour = null, Integer minute = null, Integer duration = null) {
         def username = crmSecurityService.currentUser?.username
-        def type = getTaskType("alarm") ?: createTaskType(param: "alarm", name: "Påminnelse", true)
+        def type = getTaskType("alarm") ?: createTaskType(param: "alarm", name: "Alarm", true)
         def startTime = date ? date.clone() : new Date()
         def cal = Calendar.getInstance()
         cal.setTime(startTime)
