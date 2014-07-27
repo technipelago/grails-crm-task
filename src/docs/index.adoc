@@ -56,7 +56,7 @@ image::task-domain.png[role="thumb"]
 
 === CrmTask
 
-[options="header"]
+[options="header",cols="25,25,50"]
 |===
 | Property          | Type        | Description
 | number            | String      | The task's natural ID
@@ -125,7 +125,7 @@ TIP: The +list()+ method is +@Selectable+ which means you can use the +selection
 To search for tasks you initialize the +query+ map with query values. With the +params+ map you can specify things like
 sort order and pagination. The following query keys can be used in the +query+ map.
 
-[options="header"]
+[options="header",cols="25,25,50"]
 |===
 | Key           | Description         | Type
 | number        | Task number         | String (wildcard supported)
@@ -149,14 +149,16 @@ and are not started. As you can see you can combine several query values when yo
 ----
 def result = crmTaskService.list([referenceType: 'crmContact',
     fromDate: '2014-07-01', toDate: '2014-07-31', complete: 0], [:])
+println "Found ${result.size()} tasks scheduled for July"
 ----
 
 === Setting task status
 
-A task keep track if it's completed or not. The +completed+ property is an +int+ constrained to 0-100 which represents
+A task keep track if it's completed or not. The +completed+ property is an +Integer+ constrained to 0-100 which represents
 how many percent completed the task is. The +CrmTask+ domain class has three constants that defines common/simple states of completion.
 These constants can be used when you don't need fine grained control of how many percent is complete.
 
+[cols="40,10,50"]
 |===
 | CrmTask.STATUS_PLANNED   |   0 | The task is not started (it's zero percent complete)
 | CrmTask.STATUS_ACTIVE    |  50 | The task is started but not yet completed (it's 50 % complete)
@@ -205,7 +207,7 @@ that listens for the +crmTask.alarm+ event and take appropriate action.
 To set an alarm for a task you just have to set two properties on the task instance. Set +alarmTime+ to a +Date+ instance and +alarmType+ to an +Integer+.
 The +CrmTask+ domain class defines +Integer+ constants for common alarm types.
 
-[options="header"]
+[options="header",cols="40,10,50"]
 |===
 | Constant                   | Value | Description
 | CrmTask.ALARM_NONE         |  0    | No alarm will be triggered
@@ -218,6 +220,31 @@ The +CrmTask+ domain class defines +Integer+ constants for common alarm types.
 | CrmTask.ALARM_CUSTOM_2     | 11    | Application defined alarm type
 | CrmTask.ALARM_CUSTOM_3     | 12    | Application defined alarm type
 |===
+
+The following application code listens for the +crmTask.alarm+ event and sends an email to the task owner.
+Email subject will be the task name and email body will be the task description.
+
+[source,groovy]
+.MyAlarmService.groovy
+----
+@Listener(namespace = "crmTask", topic = "alarm")
+def alarm(data) {
+    TenantUtils.withTenant(data.tenant) {
+        def task = crmTaskService.getTask(data.id)
+        def user = crmSecurityService.getUser(task.username)
+        if (task) {
+            sendMail {
+                to user.email
+                subject task.name
+                body task.description
+            }
+        } else {
+            log.error "Cannot find CrmTask with id [${data.id}]"
+        }
+    }
+    null
+}
+----
 
 == License
 
