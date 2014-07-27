@@ -57,6 +57,12 @@ class CrmTask {
     public static final int ALARM_NONE = 0
     public static final int ALARM_EMAIL = 1
     public static final int ALARM_SMS = 2
+    public static final int ALARM_RESERVED_1 = 3
+    public static final int ALARM_RESERVED_2 = 4
+    public static final int ALARM_RESERVED_3 = 5
+    public static final int ALARM_CUSTOM_1 = 10
+    public static final int ALARM_CUSTOM_2 = 11
+    public static final int ALARM_CUSTOM_3 = 12
 
     private def _crmCoreService
 
@@ -148,7 +154,7 @@ class CrmTask {
         referenceProperty(maxSize: 40, nullable: true)
         offsetType(inList: [OFFSET_NONE, OFFSET_MINUTES, OFFSET_HOURS, OFFSET_DAYS, OFFSET_WEEKS, OFFSET_MONTHS, OFFSET_YEARS])
         offset()
-        alarmType(inList: [ALARM_NONE, ALARM_EMAIL, ALARM_SMS])
+        alarmType(inList: [ALARM_NONE, ALARM_EMAIL, ALARM_SMS, ALARM_RESERVED_1, ALARM_RESERVED_2, ALARM_RESERVED_3, ALARM_CUSTOM_1, ALARM_CUSTOM_2, ALARM_CUSTOM_3])
         alarmOffset()
         alarms(min: 0)
     }
@@ -314,7 +320,7 @@ class CrmTask {
         attenders?.find { it }?.getContactInformation()
     }
 
-    Duration getDuration() {
+    transient Duration getDuration() {
         Duration dur
         if (startTime && endTime) {
             use(TimeCategory) {
@@ -327,7 +333,7 @@ class CrmTask {
         return dur
     }
 
-    void setDuration(Duration d) {
+    transient void setDuration(Duration d) {
         if (startTime) {
             use(groovy.time.TimeCategory) {
                 endTime = startTime + d
@@ -339,7 +345,7 @@ class CrmTask {
         }
     }
 
-    void setDuration(int minutes) {
+    transient void setDuration(int minutes) {
         def d = new TimeDuration(0, minutes, 0, 0)
         use(groovy.time.TimeCategory) {
             if (startTime) {
@@ -350,11 +356,11 @@ class CrmTask {
         }
     }
 
-    int getDurationMinutes() {
+    transient int getDurationMinutes() {
         getDuration().toMilliseconds() / 60000
     }
 
-    Date getReferenceDate() {
+    transient Date getReferenceDate() {
         referenceProperty ? getReference()?."$referenceProperty" : null
     }
 
@@ -417,11 +423,11 @@ class CrmTask {
         return target
     }
 
-    boolean isCompleted() {
+    transient boolean isCompleted() {
         complete == STATUS_COMPLETED
     }
 
-    boolean isAlarm() {
+    transient boolean isAlarm() {
         alarmType != ALARM_NONE
     }
 
