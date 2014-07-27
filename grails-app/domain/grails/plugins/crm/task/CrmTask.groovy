@@ -170,7 +170,7 @@ class CrmTask {
     }
 
     static transients = ['date', 'dates', 'eventDates', 'dateRange', 'duration', 'durationMinutes', 'completed',
-            'reference', 'contact', 'referenceDate', 'targetDate', 'alarm']
+            'reference', 'contact', 'referenceDate', 'targetDate', 'alarm', 'dao']
 
     static searchable = {
         name boost: 1.5
@@ -284,10 +284,10 @@ class CrmTask {
     transient List<DateTime> getEventDates() {
         DateTime start
         DateTime end
-        if(startTime) {
+        if (startTime) {
             start = new DateTime(startTime)
             end = start.plusMinutes(this.getDurationMinutes() ?: 30)
-        } else if(endTime) {
+        } else if (endTime) {
             end = new DateTime(endTime)
             start = end.minusMinutes(this.getDurationMinutes() ?: 30)
         }
@@ -295,11 +295,11 @@ class CrmTask {
     }
 
     transient List<Date> getDateRange() {
-        if(startTime && endTime) {
+        if (startTime && endTime) {
             return startTime..endTime
-        } else if(startTime) {
+        } else if (startTime) {
             return [startTime]
-        } else if(endTime) {
+        } else if (endTime) {
             return [endTime]
         }
         return []
@@ -314,7 +314,7 @@ class CrmTask {
     }
 
     transient CrmContactInformation getContact() {
-        if(ref?.startsWith('crmContact@')) {
+        if (ref?.startsWith('crmContact@')) {
             return getReference()
         }
         attenders?.find { it }?.getContactInformation()
@@ -429,6 +429,42 @@ class CrmTask {
 
     transient boolean isAlarm() {
         alarmType != ALARM_NONE
+    }
+
+    private Map<String, Object> getSelfProperties(List<String> props) {
+        props.inject([:]) { m, i ->
+            def v = this."$i"
+            if (v != null) {
+                m[i] = v
+            }
+            m
+        }
+    }
+
+    private static final List<String> DAO_PROPS = [
+            'number',
+            'startTime',
+            'endTime',
+            'alarmTime',
+            'displayDate',
+            'scope',
+            'busy',
+            'hidden',
+            'alarmType',
+            'username',
+            'name',
+            'description',
+            'location',
+            'priority',
+            'complete'
+    ]
+
+    transient Map<String, Object> getDao() {
+        final Map<String, Object> map = getSelfProperties(DAO_PROPS)
+        map.tenant = tenantId
+        map.address = address?.getDao() ?: [:]
+        map.type = type?.getDao() ?: [:]
+        return map
     }
 
     String toString() {
