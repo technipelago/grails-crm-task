@@ -44,7 +44,7 @@ Because tasks are so generic and flexible, {gr8crm} applications can use tasks i
 - Time reporting
 - Event logging
 
-== Domain model
+== Domain Model
 
 In the center of the domain model is the +CrmTask+ domain class. It has a reference to +CrmTaskType+ that specifies
 what type of task it is (phone call, meeting, training, work item, etc.)
@@ -54,15 +54,57 @@ plugin have a compile-time dependency on the +crm-contact+ plugin.
 
 image::task-domain.png[role="thumb"]
 
+=== CrmTask
+
+[options="header"]
+|===
+| Property          | Type        | Description
+| number            | String      | The task's natural ID
+| startTime         | Date        | Start time
+| endTime           | Date        | End time
+| alarmTime         | Date        | Alarm/reminder time
+| busy              | Boolean     | Show as busy in calendar
+| hidden            | Boolean     | Hide from calendar
+| displayDate       | String      | Custom date format, typically used when duration spans multiple days, i.e. "4-6 October"
+| scope             | String      | Scope is typically used when duration spans multiple days, i.e. "3 days"
+
+| username          | String      | User that "owns" this task
+| name              | String      | Name/Title for the task
+| description       | String      | A longer description of the task (max 2000 characters)
+| location          | String      | Location can be the name of a conference room, venue or a street address
+| priority          | Integer     | Task priority, 0-100 where 0 is lowest and 100 is highest priority
+| complete          | Integer     | Task completion percent (0-100)
+| type              | CrmTaskType | Type of task
+| ref               | String      | Reference identifier (entityName@id) if the task is connected to a domain instance
+| address           | CrmEmbeddedAddress | Extended address information, if location is not enough
+
+| referenceProperty | String      | Used by dynamic dates
+| offsetType        | Integer     | Used by dynamic dates
+| offset            | Integer     | Used by dynamic dates
+
+| alarms            | Integer     | Number of alarms triggered for this task
+| alarmType         | Integer     | Type of alarm set
+| alarmOffset       | Integer     | Alarm offset in minutes from startTime
+
+| isRecurring       | Boolean     | True if this task is recurring
+| recurType         | String      | ["daily", "weekly", "monthly", "yearly"]
+| recurInterval     | Integer     | Example: If recurType is "weekly" and recurInterval is 1, task will repeat every week
+| recurUntil        | java.sql.Date | Task will repeat until this date
+| recurCount        | Integer     | Task will repeat this many times
+| sourceTask        | CrmTask     | Back link to original recurring task this task was created from
+|===
+
+
 == CrmTaskService
 
-The +CrmTaskService+ provides methods for task management.
++CrmTaskService+ provides lots of useful methods for task management.
 
 === Create a task
 
-To create a new task you use +crmTaskService.createTask(Map values, boolean save)+. The only mandatory properties in +CrmTask+ are +name+, +type+, +startTime+ and +endTime+.
-Name is title of the task and type specifies the task type. Start time and end time can be set in a few different ways,
-the most common way is to set them both to +Date+ instances. Another option is to set +startTime+ and +duration+ in minutes.
+To create a new task you use +crmTaskService.createTask(Map values, boolean save)+. Mandatory properties in +CrmTask+ are +name+, +type+, +startTime+ and +endTime+.
+Name is the title of the task and is displayed in lists and reports. Type specifies the task type and must exist prior to creating a task.
+Start time and end time can be set in a few different ways, the most common way is to set them both to +Date+ instances.
+Another option is to set +startTime+ to a +Date+ instance and +duration+ in (int) minutes.
 Setting the transient property +duration+ will set +endTime+ automatically.
 
 [source,groovy]
@@ -71,6 +113,111 @@ Setting the transient property +duration+ will set +endTime+ automatically.
 def type = crmTaskService.createTaskType(name: "Phone call", true)
 def task = crmTaskService.createTask(number: 42, name: "Call Sam and schedule meeting", type: type, startTime: new Date() + 1, duration: 30, true)
 ----
+
+=== Search for tasks
+
+As usual in {gr8crm} plugins the main service has a +list()+ method that performs a query.
+
+TIP: The +list()+ method is +@Selectable+ which means you can use the +selection+ plugin to query for tasks.
+
++def list(Map query, Map params)+
+
+To search for tasks you initialize the +query+ map with query values. With the +params+ map you can specify things like
+sort order and pagination. The following query keys can be used in the +query+ map.
+
+[options="header"]
+|===
+| Key           | Description         | Type
+| number        | Task number         | String (wildcard supported)
+| name          | Task name/title     | String (wildcard supported)
+| location      | Task location       | String (wildcard supported)
+| type          | Task type           | String (wildcard supported)
+| username      | Task owner/user     | String
+| priority      | Task priority       | Integer (0, 20, 40, 60, 80, 100)
+| complete      | Task completion %   | Integer (0-100)
+| fromDate      | Task start/end time | Date or String (yyyy-MM-dd)
+| toDate        | Task start/end time | Date or String (yyyy-MM-dd)
+| reference     | Task reference      | Domain instance or *reference identifier*
+| referenceType | Type of reference   | Domain class (property) name
+|===
+
+The following example will find all tasks that refer to contacts (crmContact), starts or ends during July 2014
+and are not started. As you can see you can combine several query values when you search for domain instances.
+
+[source,groovy]
+.FindSummerTasks.groovy
+----
+def result = crmTaskService.list([referenceType: 'crmContact',
+    fromDate: '2014-07-01', toDate: '2014-07-31', complete: 0], [:])
+----
+
+=== Setting task status
+
+A task keep track if it's completed or not. The +completed+ property is an +int+ constrained to 0-100 which represents
+how many percent completed the task is. The +CrmTask+ domain class has three constants that defines common/simple states of completion.
+These constants can be used when you don't need fine grained control of how many percent is complete.
+
+|===
+| CrmTask.STATUS_PLANNED   |   0 | The task is not started (it's zero percent complete)
+| CrmTask.STATUS_ACTIVE    |  50 | The task is started but not yet completed (it's 50 % complete)
+| CrmTask.STATUS_COMPLETED | 100 | The task is completed (it's 100 % complete)
+|===
+
+To set status for a task you use one of the three setStatusXxxx() methods in CrmTaskService.
+
+[source,groovy]
+.SetTaskStatus.groovy
+----
+def task = crmTaskService.createTask(name: "Fix BUG-1234", type: bug, startTime: new Date(), duration: 60, true)
+
+crmTaskService.setStatusPlanned(task)   // Planned (0 %) is the default so this call does nothing
+crmTaskService.setStatusActive(task)    // Do some work
+crmTaskService.setStatusCompleted(task) // We are finished!
+----
+
+To check if a task is completed you can call +isCompleted()+ on the +CrmTask+ instance.
+
+=== Task duration
+
+The time between a task's +startTime+ and +endTime+ is the task's duration.
+The transient property +duration+ returns the task's duration as a +groovy.time.Duration+ instance.
+You can also set the duration property to a +groovy.time.Duration+ instance or minutes as an +Integer+.
+One of +startTime+ or +endTime+ must be set before you can set the duration property, this is because
+setDuration() simply calculates and sets +startTime+ or +endTime+ for you.
+
+If you want to calculate the total duration for a set of tasks you can call +crmTaskService.getTotalDuration(Collection<CrmTask>)+.
+It will return a +groovy.time.Duration+ instance that is the sum of all task durations.
+
+[source,groovy]
+.MyTimeSheet.groovy
+----
+def tasks = crmTaskService.list([username: 'me', reference: theProject], [:])
+def duration = crmTaskService.getTotalDuration(tasks)
+println "I spent $duration on the project"
+----
+
+== Alarms
+
+You can set an alarm for a task. A *quartz* job +CrmTaskAlarmJob+ will monitor alarms and trigger an application event when the time is up.
+To do something useful (like sending an email or text message) when the alarm is triggered you must add an event listener in your application
+that listens for the +crmTask.alarm+ event and take appropriate action.
+
+To set an alarm for a task you just have to set two properties on the task instance. Set +alarmTime+ to a +Date+ instance and +alarmType+ to an +Integer+.
+The +CrmTask+ domain class defines +Integer+ constants for common alarm types.
+
+[options="header"]
+|===
+| Constant                   | Value | Description
+| CrmTask.ALARM_NONE         |  0    | No alarm will be triggered
+| CrmTask.ALARM_EMAIL        |  1    | Send an email to the user that owns the task
+| CrmTask.ALARM_SMS          |  2    | Send a text message to the user that owns the task
+| CrmTask.ALARM_RESERVED_1   |  3    | Reserved for future use
+| CrmTask.ALARM_RESERVED_2   |  4    | Reserved for future use
+| CrmTask.ALARM_RESERVED_3   |  5    | Reserved for future use
+| CrmTask.ALARM_CUSTOM_1     | 10    | Application defined alarm type
+| CrmTask.ALARM_CUSTOM_2     | 11    | Application defined alarm type
+| CrmTask.ALARM_CUSTOM_3     | 12    | Application defined alarm type
+|===
 
 == License
 
