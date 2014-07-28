@@ -27,10 +27,10 @@ class CrmTaskGrailsPlugin {
             "grails-app/domain/test/TestEntity.groovy",
             "src/groovy/grails/plugins/crm/task/TestSecurityDelegate.groovy"
     ]
-    def title = "GR8 CRM Task Management"
+    def title = "Task Management Services for GR8 CRM"
     def author = "Goran Ehrsson"
     def authorEmail = "goran@technipelago.se"
-    def description = "Provides task management domain classes and services for GR8 CRM applications."
+    def description = "Provides task management services and domain classes for GR8 CRM applications"
     def documentation = "http://gr8crm.github.io/plugins/crm-task/"
     def license = "APACHE"
     def organization = [name: "Technipelago AB", url: "http://www.technipelago.se/"]
