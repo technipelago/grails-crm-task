@@ -254,6 +254,11 @@ My initial goal was to learn from Craig Burke and implement it like he describes
 http://www.craigburke.com/2012/02/09/google-calendar-in-grails-part1-the-model.html[GOOGLE CALENDAR IN GRAILS^].
 Contributions are welcome!
 
+== Changes
+
+2.0.1:: TBD
+2.0.0:: First public release
+
 == License
 
 {license}
