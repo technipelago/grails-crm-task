@@ -18,7 +18,7 @@ import grails.plugins.crm.task.CrmTask
 
 class CrmTaskGrailsPlugin {
     def groupId = ""
-    def version = "2.0.0"
+    def version = "2.0.1-SNAPSHOT"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def loadAfter = ['crmTags']
@@ -30,7 +30,7 @@ class CrmTaskGrailsPlugin {
     def title = "Task Management Services for GR8 CRM"
     def author = "Goran Ehrsson"
     def authorEmail = "goran@technipelago.se"
-    def description = "Provides task management services and domain classes for GR8 CRM applications"
+    def description = "Provides task management services and domain classes for GR8 CRM applications. For task management user interface see plugin crm-task-ui."
     def documentation = "http://gr8crm.github.io/plugins/crm-task/"
     def license = "APACHE"
     def organization = [name: "Technipelago AB", url: "http://www.technipelago.se/"]
