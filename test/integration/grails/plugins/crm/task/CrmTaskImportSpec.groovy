@@ -5,7 +5,7 @@ import spock.lang.Ignore
 /**
  * Test import of tasks using the crm-import plugin.
  */
-class CrmTaskImportSpec  extends grails.plugin.spock.IntegrationSpec {
+class CrmTaskImportSpec  extends grails.test.spock.IntegrationSpec {
 
     def crmImportService
 

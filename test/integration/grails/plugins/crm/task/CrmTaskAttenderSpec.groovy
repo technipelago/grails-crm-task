@@ -3,7 +3,7 @@ package grails.plugins.crm.task
 /**
  * Test CrmTaskAttender features.
  */
-class CrmTaskAttenderSpec extends grails.plugin.spock.IntegrationSpec {
+class CrmTaskAttenderSpec extends grails.test.spock.IntegrationSpec {
 
     def crmTaskService
     def crmContactService

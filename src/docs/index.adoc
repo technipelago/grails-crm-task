@@ -256,7 +256,7 @@ Contributions are welcome!
 
 == Changes
 
-2.0.1:: TBD
+2.4.0:: First version compatible with Grails 2.4.4
 2.0.0:: First public release
 
 == License
@@ -266,3 +266,9 @@ Contributions are welcome!
 == Source Code
 
 The source code for this plugin is available at {gr8source}
+
+== Contributing
+
+Please report {gr8source}/issues[issues or suggestions].
+
+Want to improve the plugin: Fork the {gr8source}[repository] and send a pull request.
