@@ -47,20 +47,23 @@ class CrmTaskAttender {
         tmp(nullable: true)
     }
 
-    static transients = ['contactInformation']
+    static transients = ['contactInformation', 'dao']
+
+    static taggable = true
+    static attachmentable = true
 
     CrmContactInformation getContactInformation() {
-        if(contact != null) {
+        if (contact != null) {
             return contact
         }
-        if(tmp == null) {
+        if (tmp == null) {
             tmp = new CrmEmbeddedContact()
         }
         tmp
     }
 
     void setContactInformation(CrmContactInformation contactInfo) {
-        if(contactInfo == null) {
+        if (contactInfo == null) {
             contact = null
             tmp = null
         } else if (contactInfo instanceof CrmContact) {
@@ -90,5 +93,23 @@ class CrmTaskAttender {
 
     String toString() {
         contactInformation.fullName.toString()
+    }
+
+    transient Map<String, Object> getDao() {
+        final Map<String, Object> map = getContactInformation().getDao()
+        map.id = id
+        if(task != null) {
+            map.tenant = task.tenantId
+            map.task = task.dao
+            map.task.id = task.id
+            if(! map.number) {
+                map.number = task.guid
+            }
+        }
+        map.bookingDate = bookingDate
+        map.bookingRef = bookingRef
+        map.status = status?.param
+        map.notes = notes
+        return map
     }
 }
