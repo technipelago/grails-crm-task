@@ -53,6 +53,7 @@ class CrmTaskService {
         TenantUtils.withTenant(tenant.id) {
 
             crmTagService.createTag(name: CrmTask.name, multiple: true)
+            crmTagService.createTag(name: CrmTaskAttender.name, multiple: true)
 
             // Create default/example task types.
             self.createTaskType(orderIndex: 1, param: "admin", name: messageSource.getMessage("crmTaskType.name.admin", null, "Paper work", locale), true)
