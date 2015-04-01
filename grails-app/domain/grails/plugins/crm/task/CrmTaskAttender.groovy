@@ -110,6 +110,7 @@ class CrmTaskAttender {
         map.bookingRef = bookingRef
         map.status = status?.param
         map.notes = notes
+        map.tags = this.getTagValue()
         return map
     }
 }
