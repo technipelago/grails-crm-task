@@ -96,7 +96,8 @@ class CrmTaskAttender {
     }
 
     transient Map<String, Object> getDao() {
-        final Map<String, Object> map = getContactInformation().getDao()
+        final CrmContactInformation contact = getContactInformation()
+        final Map<String, Object> map = contact.getDao()
         map.id = id
         if(task != null) {
             map.tenant = task.tenantId
@@ -105,6 +106,9 @@ class CrmTaskAttender {
             if(! map.number) {
                 map.number = task.guid
             }
+        }
+        if(! map.fullAddress) {
+            map.fullAddress = contact.fullAddress
         }
         map.bookingDate = bookingDate
         map.bookingRef = bookingRef
