@@ -256,6 +256,7 @@ Contributions are welcome!
 
 == Changes
 
+2.4.1:: Tagging support for task attenders
 2.4.0:: First version compatible with Grails 2.4.4
 2.0.0:: First public release
 
