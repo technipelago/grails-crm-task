@@ -254,8 +254,58 @@ My initial goal was to learn from Craig Burke and implement it like he describes
 http://www.craigburke.com/2012/02/09/google-calendar-in-grails-part1-the-model.html[GOOGLE CALENDAR IN GRAILS^].
 Contributions are welcome!
 
+== Attenders
+
+The +crm-task+ plugin have extensive support for assigning attenders to a task. This can be used to schedule meetings
+with attenders, or conference registrations. The +crm-task-ui+ plugin have back-office UI for managing
+events and attenders.
+
+The +CrmTask+ domain class contains information about a single event, with properties like start time, end time
+and location of the event. A +CrmTask+ instance can have many +CrmTaskBooking+ instances.
+A booking hold one or more attenders. For example, if one company register three employees for an event,
+then one +CrmTaskBooking+ instances is created with three +CrmTaskAttender+ instances. The booking is like an "order",
+typically for commercial events one invoice is created for each booking. That's why +CrmTaskBooking+ domain class
+contains customer and (invoice) address properties.
+
+[source,groovy]
+.AddAttendersToEvent.groovy
+----
+def conference = crmTaskService.createTaskType(name: "Conference", param: "conf", true) <1>
+def gr8conf = crmTaskService.createTask(number: 'GR8CONF-EU-2015', name: "Gr8Conf EU 2015",
+    type: conference, location: "Copenhagen, Denmark",
+    startTime: date(2015, 6, 2, 9, 0), endTime: date(2015, 6, 4, 16, 0), displayDate: "2-4 june 2015",
+    true) <2>
+
+def booking = crmTaskService.createBooking(task: gr8conf,
+    invoiceAddress: [address1: 'Technipelago AB', address2: 'Gransbergsvägen 18',
+    postalCode: '13973', city: 'Djurhamn', country: 'Sweden'],
+    true) <3>
+
+def attender1 = crmContactService.createContactInformation(firstName: "Göran", lastName: "Ehrsson",
+    email: "goran@technipelago.se", company: "Technipelago AB") <4>
+crmTaskService.addAttender(booking, attender1, 'created') <5>
+
+def attender2 = crmContactService.createContactInformation(firstName: "Sven", lastName: "Andersson",
+    email: "sven@technipelago.se", company: "Technipelago AB") <6>
+crmTaskService.addAttender(booking, attender2, 'created') <7>
+----
+<1> Task (event) type is mandatory so we create a type called "Conference".
+<2> We create an event for one of the best conferences in the Groovy ecosystem.
+<3> Create a booking that will hold all attendees from a company.
+<4> Create contact information for the first attender the company will send to the conference.
+<5> Add the first attender to the conference booking
+<6> Create contact information for the second attender.
+<7> Add the second attender to the conference booking.
+
+The above example is a typical workflow for registering two attendees from the same company on a conference.
+All of the above can be entered manually with forms in the *crm-task-ui* plugin.
+
+NOTE: Version 2.4.2 of crm-task plugin changed the domain hierarchy around attenders.
+Previously CrmTaskBooking was optional but since 2.4.2 CrmTaskBooking is mandatory when working with CrmTaskAttender.
+
 == Changes
 
+2.4.2:: Refactored domain hierarchy CrmTask -> CrmTaskBooking -> CrmTaskAttender (database migration!)
 2.4.1:: Tagging support for task attenders
 2.4.0:: First version compatible with Grails 2.4.4
 2.0.0:: First public release
