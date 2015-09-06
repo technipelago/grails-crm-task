@@ -18,7 +18,6 @@ package grails.plugins.crm.task
 
 import grails.plugins.crm.contact.CrmContact
 import grails.plugins.crm.core.CrmContactInformation
-import grails.plugins.crm.core.CrmEmbeddedContact
 import grails.plugins.crm.core.TenantUtils
 import grails.plugins.crm.core.DateUtils
 import grails.plugins.crm.core.SearchUtils
@@ -29,6 +28,7 @@ import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import grails.plugins.selection.Selectable
 import grails.events.Listener
 import org.apache.commons.lang.StringUtils
+import org.grails.databinding.SimpleMapDataBindingSource
 
 /**
  * Task management service.
@@ -43,6 +43,8 @@ class CrmTaskService {
 
     def sessionFactory
 
+    def grailsWebDataBinder
+
     @Listener(namespace = "crmTask", topic = "enableFeature")
     def enableFeature(event) {
         // event = [feature: feature, tenant: tenant, role:role, expires:expires]
@@ -54,6 +56,7 @@ class CrmTaskService {
 
             crmTagService.createTag(name: CrmTask.name, multiple: true)
             crmTagService.createTag(name: CrmTaskAttender.name, multiple: true)
+            crmTagService.createTag(name: CrmTaskBooking.name, multiple: true)
 
             // Create default/example task types.
             self.createTaskType(orderIndex: 1, param: "admin", name: messageSource.getMessage("crmTaskType.name.admin", null, "Paper work", locale), true)
@@ -159,10 +162,70 @@ class CrmTaskService {
         def tenant = crmTask.tenantId
         def username = crmSecurityService.currentUser?.username
         event(for: "crmTask", topic: "delete", fork: false, data: [id: id, tenant: tenant, user: username, name: tombstone])
-        crmTask.delete(flush:true)
+        crmTask.delete(flush: true)
         log.debug "Deleted task #$id in tenant $tenant \"${tombstone}\""
         event(for: "crmTask", topic: "deleted", data: [id: id, tenant: tenant, user: username, name: tombstone])
         return tombstone
+    }
+
+    String deleteAttender(final CrmTaskAttender crmTaskAttender) {
+        final CrmTaskBooking crmTaskBooking = crmTaskAttender.booking
+        final CrmTask crmTask = crmTaskBooking.task
+        final String tombstone = crmTaskAttender.toString()
+        final String username = crmSecurityService.currentUser?.username
+        def tenant = crmTask.tenantId
+
+        if (crmTaskBooking.attenders.size() > 1) {
+            def id = crmTaskAttender.id
+            event(for: "crmTaskAttender", topic: "delete", fork: false, data: [id: id, tenant: tenant, user: username, name: tombstone])
+
+            crmTaskBooking.removeFromAttenders(crmTaskAttender)
+            crmTaskAttender.delete()
+            crmTaskBooking.save(flush: true)
+
+            log.debug "Deleted attender #$id in tenant $tenant \"${tombstone}\""
+            event(for: "crmTaskAttender", topic: "deleted", data: [id: id, tenant: tenant, user: username, name: tombstone])
+        } else {
+            def bookingTombstone = crmTaskBooking.toString()
+            def bookingId = crmTaskBooking.id
+            def attenderId = crmTaskAttender.id
+            event(for: "crmTaskAttender", topic: "delete", fork: false, data: [id: attenderId, tenant: tenant, user: username, name: tombstone])
+            event(for: "crmTaskBooking", topic: "delete", fork: false, data: [id: bookingId, tenant: tenant, user: username, name: bookingTombstone])
+
+            CrmTaskBooking foo = crmTask.bookings.find{it.id == crmTaskBooking.id}
+            if(foo) {
+                crmTask.removeFromBookings(foo)
+                foo.delete()
+                crmTask.save(flush: true)
+            }
+
+            log.debug "Deleted attender #$attenderId in tenant $tenant \"${tombstone}\""
+            event(for: "crmTaskAttender", topic: "deleted", data: [id: attenderId, tenant: tenant, user: username, name: tombstone])
+
+            log.debug "Deleted booking #$bookingId in tenant $tenant \"${bookingTombstone}\""
+            event(for: "crmTaskBooking", topic: "deleted", data: [id: bookingId, tenant: tenant, user: username, name: bookingTombstone])
+        }
+        return tombstone
+    }
+
+    /**
+     * Move attender to another booking.
+     *
+     * @param crmTaskAttender the attender to move
+     * @param crmTaskBooking the destination booking
+     * @param removeBooking if the old booking has no more attendees remove the booking
+     * @return The old CrmTaskBooking instance
+     */
+    CrmTaskBooking moveAttender(CrmTaskAttender crmTaskAttender, CrmTaskBooking crmTaskBooking, boolean removeBooking) {
+        CrmTaskBooking oldBooking = crmTaskAttender.booking
+        crmTaskAttender.booking = crmTaskBooking
+        crmTaskAttender.save(flush: true)
+        oldBooking = oldBooking.refresh()
+        if (oldBooking.attenders.isEmpty() && removeBooking) {
+            oldBooking.delete(flush: true)
+            oldBooking = null
+        }
+        return oldBooking
     }
 
     CrmTaskAttenderStatus getAttenderStatus(String param) {
@@ -198,38 +261,49 @@ class CrmTaskService {
     }
 
     CrmTaskAttender addAttender(CrmTask task, CrmContactInformation contact, Object status = null, String notes = null) {
+        def booking = createBooking([task: task], true)
+        if (booking.hasErrors()) {
+            return null
+        }
+        addAttender(booking, contact, status, notes)
+    }
+
+    CrmTaskAttender addAttender(CrmTaskBooking booking, CrmContactInformation contact, Object status = null, String notes = null) {
         if (contact == null) {
-            throw new IllegalArgumentException("Cannot add null attender to task [$task]")
+            throw new IllegalArgumentException("Cannot add null attender to booking [$booking]")
         }
         CrmTaskAttenderStatus attenderStatus
         if (status instanceof CrmTaskAttenderStatus) {
             attenderStatus = status
-        } else if(status) {
+        } else if (status) {
             attenderStatus = getAttenderStatus(status.toString())
             if (!attenderStatus) {
-                throw new IllegalArgumentException("[$status] is not a valid attender status for task [$task]")
+                throw new IllegalArgumentException("[$status] is not a valid attender status for booking [$booking]")
             }
         } else {
-            attenderStatus = listAttenderStatus().find{it}
+            attenderStatus = listAttenderStatus().find { it }
         }
-        def ta = new CrmTaskAttender(task: task, status: attenderStatus, notes: notes)
+        def ta = new CrmTaskAttender(booking: booking, status: attenderStatus, notes: notes)
         ta.setContactInformation(contact)
         if (ta.validate()) {
-            task.addToAttenders(ta)
+            booking.addToAttenders(ta)
         }
         return ta
     }
 
-    List<CrmTaskAttender> findTasksAttended(CrmContact contact, Map params = [:]) {
-        CrmTaskAttender.findAllByContact(contact, params)
+    CrmTaskAttender getTaskAttender(Long id, Long tenant = null) {
+        def a = CrmTaskAttender.get(id)
+        if (!a) {
+            return null
+        }
+        if (tenant == null) {
+            tenant = TenantUtils.tenant
+        }
+        a.booking.task.tenantId == tenant ? a : null
     }
 
-    // TODO Move this method to CrmContactService in plugin crm-contact.
-    CrmContactInformation createContactInformation(Map<String, Object> values) {
-        def m = new CrmEmbeddedContact()
-        def args = [m, values]
-        new BindDynamicMethod().invoke(m, 'bind', args.toArray())
-        return m
+    List<CrmTaskAttender> findTasksAttended(CrmContact contact, Map params = [:]) {
+        CrmTaskAttender.findAllByContact(contact, params)
     }
 
     /**
@@ -254,27 +328,29 @@ class CrmTaskService {
     def list(Map query, Map params) {
         def tenant = TenantUtils.tenant
         def ids
-        if(query.attender) {
+        if (query.attender) {
             ids = CrmTaskAttender.createCriteria().list() {
                 projections {
-                    distinct('task.id')
+                    distinct('booking.task.id')
                 }
-                task {
-                    eq('tenantId', tenant)
+                booking {
+                    task {
+                        eq('tenantId', tenant)
+                    }
                 }
                 contact {
                     ilike('name', SearchUtils.wildcard(query.attender))
                 }
             } ?: [0L]
         }
-        if(query.tags) {
+        if (query.tags) {
             def tagged = crmTagService.findAllIdByTag(CrmTask, query.tags) ?: [0L]
-            if(ids) {
+            if (ids) {
                 ids.retainAll(tagged)
             } else {
                 ids = tagged
             }
-            if(ids.isEmpty()) {
+            if (ids.isEmpty()) {
                 ids = [0L]
             }
         }
@@ -314,7 +390,7 @@ class CrmTaskService {
                 eq('ref', crmCoreService.getReferenceIdentifier(query.reference))
             } else if (query.ref) {
                 eq('ref', query.ref)
-            } else if(query.referenceType) {
+            } else if (query.referenceType) {
                 def rt = crmCoreService.getReferenceType(query.referenceType)
                 ilike('ref', rt + '@%')
             }
@@ -341,7 +417,7 @@ class CrmTaskService {
                     le('endTime', d2)
                 }
             }
-            if(ids) {
+            if (ids) {
                 inList('id', ids)
             }
         }
@@ -379,8 +455,8 @@ class CrmTaskService {
                 val.dur."$field.key" = dmap."$field.key" + val.roll
                 val.roll = val.dur."$field.key".intdiv(field.value)
                 val.dur."$field.key" = field.value < 0 ?
-                    val.dur."$field.key" :
-                    val.dur."$field.key" % field.value
+                        val.dur."$field.key" :
+                        val.dur."$field.key" % field.value
                 val
             }.dur
         }
@@ -531,5 +607,52 @@ class CrmTaskService {
         crmTask.save(flush: true)
         // TODO snooze a day or two?
         crmTask.alarms
+    }
+
+    /**
+     * Create a CrmTaskBooking instance and add it to a CrmTask.
+     *
+     * @param params
+     * @param save true if the supplied CrmTask instance should be saved
+     * @return
+     */
+    CrmTaskBooking createBooking(Map params, boolean save = false) {
+        def crmTask = params.task
+        if (!crmTask) {
+            throw new IllegalArgumentException("Property 'task' is not set")
+        }
+        def m = new CrmTaskBooking(task: crmTask)
+        //def args = [m, params, [include: CrmTaskBooking.BIND_WHITELIST]]
+        //new BindDynamicMethod().invoke(m, 'bind', args.toArray())
+
+        grailsWebDataBinder.bind(m, params as SimpleMapDataBindingSource, null, CrmTaskBooking.BIND_WHITELIST, null, null)
+
+        if (m.validate()) {
+            crmTask.addToBookings(m)
+            if (save) {
+                crmTask.save(flush: true)
+            }
+        }
+
+        return m
+    }
+
+    /**
+     * Add a CrmTaskBooking to a CrmTask instance.
+     *
+     * @param crmTask
+     * @param params
+     * @return
+     */
+    CrmTaskBooking addBooking(CrmTask crmTask, Map params) {
+        def m = new CrmTaskBooking(task: crmTask)
+
+        grailsWebDataBinder.bind(m, params as SimpleMapDataBindingSource, null, CrmTaskBooking.BIND_WHITELIST, null, null)
+
+        if (m.validate()) {
+            crmTask.addToBookings(m)
+        }
+
+        return m
     }
 }

@@ -106,7 +106,7 @@ class CrmTask {
 
     CrmEmbeddedAddress address
 
-    static hasMany = [recurDaysOfWeek: Integer, excludeDays: java.sql.Date, attenders: CrmTaskAttender]
+    static hasMany = [recurDaysOfWeek: Integer, excludeDays: java.sql.Date, bookings: CrmTaskBooking]
 
     static embedded = ['address']
 
@@ -166,11 +166,10 @@ class CrmTask {
         alarmTime index: 'crm_task_alarm_idx'
         username index: 'crm_task_user_idx'
         ref index: 'crm_task_ref_idx'
-        attenders sort: 'bookingDate', 'asc'
+        bookings sort: 'bookingDate', 'asc'
     }
 
-    static transients = ['date', 'dates', 'eventDates', 'dateRange', 'duration', 'durationMinutes', 'completed',
-            'reference', 'contact', 'referenceDate', 'targetDate', 'alarm', 'dao']
+    static transients = ['date', 'duration', 'reference']
 
     static searchable = {
         name boost: 1.5
@@ -313,11 +312,30 @@ class CrmTask {
         ref ? crmCoreService.getReference(ref) : null
     }
 
+    /**
+     * If this task is directly associated with a CrmContact, it is returned.
+     * Otherwise the first booked attender is returned.
+     *
+     * @return
+     */
     transient CrmContactInformation getContact() {
         if (ref?.startsWith('crmContact@')) {
             return getReference()
         }
-        attenders?.find { it }?.getContactInformation()
+        getAttenders().find { it }?.getContactInformation()
+    }
+
+    /**
+     * Return a list of CrmTaskAttender instances associated with this task.
+     *
+     * @return if no attenders are found an empty List is returned.
+     */
+    transient List<CrmTaskAttender> getAttenders() {
+        ident() ? CrmTaskAttender.createCriteria().list([sort: 'bookingDate', order: 'asc']) {
+            booking {
+                eq('task', this)
+            }
+        } : Collections.EMPTY_LIST
     }
 
     transient Duration getDuration() {

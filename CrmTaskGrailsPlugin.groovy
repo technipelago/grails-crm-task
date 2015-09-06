@@ -18,7 +18,7 @@ import grails.plugins.crm.task.CrmTask
 
 class CrmTaskGrailsPlugin {
     def groupId = ""
-    def version = "2.4.1"
+    def version = "2.4.2-SNAPSHOT"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def loadAfter = ['crmTags']
@@ -44,8 +44,8 @@ class CrmTaskGrailsPlugin {
             permissions {
                 guest "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
                 partner "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
-                user "crmTask,crmCalendar:*"
-                admin "crmTask,crmTaskCategory,crmTaskStatus,crmTaskType,crmCalendar:*"
+                user "crmTask,crmCalendar:*", "crmTaskAttender,crmTaskBooking:show"
+                admin "crmTask,crmTaskCategory,crmTaskStatus,crmTaskType,crmCalendar:*", "crmTaskAttender,crmTaskBooking:*"
             }
             statistics { tenant ->
                 def total = CrmTask.countByTenantId(tenant)
