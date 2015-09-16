@@ -45,7 +45,7 @@ class CrmTaskAttender {
         bookingDate()
         bookingRef(maxSize: 80, nullable: true)
         externalRef(maxSize: 80, nullable: true)
-        source(maxSize: 40, nullable: true)
+        source(maxSize: 80, nullable: true)
         notes(maxSize: 2000, nullable: true, widget: 'textarea')
         status()
         tmp(nullable: true)
