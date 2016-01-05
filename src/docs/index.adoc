@@ -32,7 +32,7 @@ that focus on one specific domain, for example *contact*, *project* or *document
 
 == Task Management Plugin
 
-A *Task* in {gr8crm} is a domain instance that represents a unit of work that has been done in the past or is scheduled to be done in the future.
+A *Task* (a.k.a Activity) in {gr8crm} is a domain instance that represents a unit of work that has been done in the past or is scheduled to be done in the future.
 A task is very similar to a calendar item, it has a start time and a duration.
 Because tasks are so generic and flexible, {gr8crm} applications can use tasks in many ways. Here's are a list of real-world use-cases for tasks.
 
@@ -305,6 +305,7 @@ Previously CrmTaskBooking was optional but since 2.4.2 CrmTaskBooking is mandato
 
 == Changes
 
+2.4.3:: Increased CrmTaskAttender.source to 80 characters and renamed Task to Activity
 2.4.2:: Refactored domain hierarchy CrmTask -> CrmTaskBooking -> CrmTaskAttender (database migration!)
 2.4.1:: Tagging support for task attenders
 2.4.0:: First version compatible with Grails 2.4.4
