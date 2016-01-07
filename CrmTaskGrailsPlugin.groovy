@@ -18,8 +18,8 @@ import grails.plugins.crm.task.CrmTask
 
 class CrmTaskGrailsPlugin {
     def groupId = ""
-    def version = "2.4.3"
-    def grailsVersion = "2.2 > *"
+    def version = "2.4.4-SNAPSHOT"
+    def grailsVersion = "2.4 > *"
     def dependsOn = [:]
     def loadAfter = ['crmTags']
     def pluginExcludes = [
