@@ -90,12 +90,12 @@ class CrmTaskBooking {
 
     transient String getAttenderName() {
         final StringBuilder s = new StringBuilder()
-        if(attenders) {
+        if (attenders) {
             final Iterator<CrmTaskAttender> itor = attenders.iterator()
-            if(itor.hasNext()) {
+            if (itor.hasNext()) {
                 s << itor.next().toString()
             }
-            if(itor.hasNext()) {
+            if (itor.hasNext()) {
                 s << '...'
             }
         }
@@ -103,13 +103,43 @@ class CrmTaskBooking {
     }
 
     transient String getTitle() {
-        if(bookingRef) {
+        if (bookingRef) {
             return bookingRef
         }
-        if(contact) {
+        if (contact) {
             return contact.toString()
         }
         return ''
+    }
+
+    private static final List<String> DAO_PROPS = [
+            'bookingRef',
+            'bookingDate',
+            'reserve',
+            'comments'
+    ]
+
+    private Map<String, Object> getSelfProperties(List<String> props) {
+        props.inject([:]) { m, i ->
+            def v = this."$i"
+            if (v != null) {
+                m[i] = v
+            }
+            m
+        }
+    }
+
+    transient Map<String, Object> getDao() {
+        final Map<String, Object> map = getSelfProperties(DAO_PROPS)
+        map.tenant = task.tenantId
+        map.task = taskId
+        map.invoiceAaddress = invoiceAddress?.getDao() ?: [:]
+        if (contact) {
+            map.contact = contact.getDao(false)
+        }
+        map.tags = getTagValue()
+
+        map
     }
 
     String toString() {
