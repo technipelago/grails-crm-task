@@ -24,7 +24,7 @@ import grails.plugins.crm.security.CrmAccount
 class CrmTaskAlarmJob {
 
     static triggers = {
-        simple name: 'crmTaskAlarm', startDelay: 90000, repeatInterval: 300000 // every five minutes
+        simple name: 'crmTaskAlarm', startDelay: 1000 * 60 * 3, repeatInterval: 1000 * 60 * 5 // every five minutes
     }
 
     def group = 'crmTask'
@@ -34,15 +34,20 @@ class CrmTaskAlarmJob {
 
     def execute() {
         if(grailsApplication.config.crm.task.job.alarm.enabled) {
-            for (due in crmTaskService.findDueAlarms()) {
-                // select status from crm_account where id = (select account_id from crm_tenant where id = ?)
-                def crmAccount = CrmAccount.find("from CrmAccount as a where a = (select account from CrmTenant as t where t.id = ?)", [due.tenantId])
-                if(crmAccount?.active) {
-                    crmTaskService.triggerAlarm(due)
+            def result = crmTaskService.findDueAlarms()
+            if(result) {
+                for (due in result) {
+                    // select status from crm_account where id = (select account_id from crm_tenant where id = ?)
+                    def crmAccount = CrmAccount.find("from CrmAccount as a where a = (select account from CrmTenant as t where t.id = ?)", [due.tenantId])
+                    if(crmAccount?.active) {
+                        crmTaskService.triggerAlarm(due)
+                    }
                 }
+            } else if(log.isDebugEnabled()) {
+                log.debug "${getClass().getName()}: no alarms to trigger at this time"
             }
-        } else {
-            log.debug "${getClass().getName()} is disabled because config [crmTask.job.alarm.enabled] is not true"
+        } else if(log.isDebugEnabled()) {
+            log.debug "${getClass().getName()} is disabled because config [crm.task.job.alarm.enabled] is not true"
         }
     }
 }
