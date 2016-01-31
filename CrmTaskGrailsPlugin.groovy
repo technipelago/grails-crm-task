@@ -44,7 +44,7 @@ class CrmTaskGrailsPlugin {
             permissions {
                 guest "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
                 partner "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
-                user "crmTask,crmCalendar:*", "crmTaskAttender,crmTaskBooking:show"
+                user "crmTask,crmTaskAttender,crmTaskBooking,crmCalendar:*"
                 admin "crmTask,crmTaskCategory,crmTaskStatus,crmTaskType,crmCalendar:*", "crmTaskAttender,crmTaskBooking:*"
             }
             statistics { tenant ->
