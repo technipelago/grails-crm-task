@@ -16,18 +16,18 @@
 
 package grails.plugins.crm.task
 
+import grails.events.Listener
 import grails.plugins.crm.contact.CrmContact
 import grails.plugins.crm.core.CrmContactInformation
-import grails.plugins.crm.core.TenantUtils
 import grails.plugins.crm.core.DateUtils
 import grails.plugins.crm.core.SearchUtils
+import grails.plugins.crm.core.TenantUtils
+import grails.plugins.selection.Selectable
 import groovy.time.Duration
 import groovy.time.TimeDuration
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
-import grails.plugins.selection.Selectable
-import grails.events.Listener
 import org.apache.commons.lang.StringUtils
+import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.grails.databinding.SimpleMapDataBindingSource
 
 /**
@@ -135,9 +135,11 @@ class CrmTaskService {
     }
 
     CrmTask createTask(Map params, boolean save = false) {
+        def user = crmSecurityService.currentUser
         def task = new CrmTask()
-        def args = [task, params, [include: CrmTask.BIND_WHITELIST]]
-        new BindDynamicMethod().invoke(task, 'bind', args.toArray())
+
+        grailsWebDataBinder.bind(task, params as SimpleMapDataBindingSource, null, CrmTask.BIND_WHITELIST, null, null)
+
         task.tenantId = TenantUtils.tenant
 
         if (params.reference) {
@@ -146,11 +148,11 @@ class CrmTaskService {
         if (params.duration) {
             task.setDuration(params.duration)
         }
-        if (save) {
-            task.save()
-        } else {
+        if (!save) {
             task.validate()
             task.clearErrors()
+        } else if (task.save()) {
+            event(for: "crmTask", topic: "created", data: [id: task.id, tenant: task.tenantId, user: user?.username, name: task.toString()])
         }
 
         return task
@@ -192,8 +194,8 @@ class CrmTaskService {
             event(for: "crmTaskAttender", topic: "delete", fork: false, data: [id: attenderId, tenant: tenant, user: username, name: tombstone])
             event(for: "crmTaskBooking", topic: "delete", fork: false, data: [id: bookingId, tenant: tenant, user: username, name: bookingTombstone])
 
-            CrmTaskBooking foo = crmTask.bookings.find{it.id == crmTaskBooking.id}
-            if(foo) {
+            CrmTaskBooking foo = crmTask.bookings.find { it.id == crmTaskBooking.id }
+            if (foo) {
                 crmTask.removeFromBookings(foo)
                 foo.delete()
                 crmTask.save(flush: true)
@@ -240,8 +242,7 @@ class CrmTaskService {
         def m = CrmTaskAttenderStatus.findByParamAndTenantId(params.param, tenant)
         if (!m) {
             m = new CrmTaskAttenderStatus()
-            def args = [m, params, [include: CrmTaskAttenderStatus.BIND_WHITELIST]]
-            new BindDynamicMethod().invoke(m, 'bind', args.toArray())
+            grailsWebDataBinder.bind(m, params as SimpleMapDataBindingSource, null, CrmTaskAttenderStatus.BIND_WHITELIST, null, null)
             m.tenantId = tenant
             if (params.enabled == null) {
                 m.enabled = true
@@ -505,7 +506,11 @@ class CrmTaskService {
             setStatusCompleted(crmTask)
             crmTask.alarms = 1
         }
-        crmTask.save(failOnError: true)
+        crmTask.save(failOnError: true, flush: true)
+
+        event(for: "crmTask", topic: "created", data: [id: crmTask.id, tenant: crmTask.tenantId, user: username, name: crmTask.toString()])
+
+        return crmTask
     }
 
     /**
@@ -540,8 +545,11 @@ class CrmTaskService {
                 setStatusCompleted(crmTask)
                 crmTask.alarms = 1
             }
-            crmTask.save(failOnError: true)
+            crmTask.save(failOnError: true, flush: true)
+
+            event(for: "crmTask", topic: "created", data: [id: crmTask.id, tenant: crmTask.tenantId, user: username, name: crmTask.toString()])
         }
+        return crmTask
     }
 
     boolean hasDuplicateDate(CrmTask crmTask) {
