@@ -16,9 +16,9 @@
 
 package grails.plugins.crm.task
 
+import grails.plugins.crm.contact.CrmContact
 import grails.plugins.crm.core.CrmContactInformation
 import grails.plugins.crm.core.CrmEmbeddedContact
-import grails.plugins.crm.contact.CrmContact
 
 /**
  * A person attending a task/event.
@@ -106,6 +106,8 @@ class CrmTaskAttender {
         map.tenant = booking.task.tenantId
         map.bookingDate = bookingDate
         map.bookingRef = bookingRef
+        map.externalRef = externalRef
+        map.source = source
         map.status = status?.param
         map.notes = getDescription()
         map.tags = getTagValue()
