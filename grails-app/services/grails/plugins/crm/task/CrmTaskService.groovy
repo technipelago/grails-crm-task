@@ -426,6 +426,51 @@ class CrmTaskService {
         }
     }
 
+    @Selectable
+    def listAttenders(Map query, Map params) {
+        def tenant = TenantUtils.tenant
+        CrmTaskAttender.createCriteria().list(params) {
+            task {
+                eq('tenantId', tenant)
+
+                if (query.task || query.event) {
+                    eq('id', Long.valueOf(query.task ?: query.event))
+                }
+                if (query.number) {
+                    eq('number', SearchUtils.wildcard(query.number))
+                }
+            }
+            if(query.status) {
+                status {
+                    or {
+                        ilike('name', SearchUtils.wildcard(query.status))
+                        eq('param', query.status)
+                    }
+                }
+            }
+            if(query.bookingRef) {
+                eq('bookingRef', query.bookingRef)
+            }
+            if(query.externalRef) {
+                eq('externalRef', query.externalRef)
+            }
+            if (query.fromDate && query.toDate) {
+                def timezone = query.timezone ?: TimeZone.getDefault()
+                def d1 = query.fromDate instanceof Date ? query.fromDate : DateUtils.parseDate(query.fromDate, timezone)
+                def d2 = query.toDate instanceof Date ? query.toDate : DateUtils.parseDate(query.toDate, timezone)
+                between('bookingDate', d1, d2)
+            } else if (query.fromDate) {
+                def timezone = query.timezone ?: TimeZone.getDefault()
+                def d1 = query.fromDate instanceof Date ? query.fromDate : DateUtils.parseDate(query.fromDate, timezone)
+                ge('bookingDate', d1)
+            } else if (query.toDate) {
+                def timezone = query.timezone ?: TimeZone.getDefault()
+                def d2 = query.toDate instanceof Date ? query.toDate : DateUtils.parseDate(query.toDate, timezone)
+                le('bookingDate', d2)
+            }
+        }
+    }
+
     @CompileStatic
     void setStatusPlanned(CrmTask crmTask) {
         crmTask.complete = CrmTask.STATUS_PLANNED
