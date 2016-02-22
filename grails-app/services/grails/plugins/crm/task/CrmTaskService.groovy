@@ -67,10 +67,12 @@ class CrmTaskService {
 
             // Create default attender statuses.
             self.createAttenderStatus(orderIndex: 1, param: "created", name: messageSource.getMessage("crmTaskAttenderStatus.name.created", null, "Created", locale), true)
-            self.createAttenderStatus(orderIndex: 2, param: "confirmed", name: messageSource.getMessage("crmTaskAttenderStatus.name.confirmed", null, "Confirmed", locale), true)
-            self.createAttenderStatus(orderIndex: 3, param: "attended", name: messageSource.getMessage("crmTaskAttenderStatus.name.attended", null, "Attended", locale), true)
-            self.createAttenderStatus(orderIndex: 4, param: "cancelled", name: messageSource.getMessage("crmTaskAttenderStatus.name.cancelled", null, "Cancelled", locale), true)
-            self.createAttenderStatus(orderIndex: 5, param: "absent", name: messageSource.getMessage("crmTaskAttenderStatus.name.absent", null, "Absent", locale), true)
+            self.createAttenderStatus(orderIndex: 2, param: "registered", name: messageSource.getMessage("crmTaskAttenderStatus.name.registered", null, "Registered", locale), true)
+            self.createAttenderStatus(orderIndex: 4, param: "confirm", name: messageSource.getMessage("crmTaskAttenderStatus.name.confirm", null, "Confirm*", locale), true)
+            self.createAttenderStatus(orderIndex: 5, param: "confirmed", name: messageSource.getMessage("crmTaskAttenderStatus.name.confirmed", null, "Confirmed", locale), true)
+            self.createAttenderStatus(orderIndex: 6, param: "attended", name: messageSource.getMessage("crmTaskAttenderStatus.name.attended", null, "Attended", locale), true)
+            self.createAttenderStatus(orderIndex: 9, param: "cancelled", name: messageSource.getMessage("crmTaskAttenderStatus.name.cancelled", null, "Cancelled", locale), true)
+            self.createAttenderStatus(orderIndex: 19, param: "absent", name: messageSource.getMessage("crmTaskAttenderStatus.name.absent", null, "Absent", locale), true)
         }
     }
 
