@@ -56,6 +56,16 @@ class CrmTaskAttender {
     static taggable = true
     static attachmentable = true
 
+    public static final List BIND_WHITELIST = [
+            'hide',
+            'bookingDate',
+            'bookingRef',
+            'externalRef',
+            'source',
+            'notes',
+            'status'
+    ]
+
     CrmContactInformation getContactInformation() {
         if (contact != null) {
             return contact
