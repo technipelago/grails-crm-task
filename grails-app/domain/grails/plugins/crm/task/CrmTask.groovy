@@ -313,8 +313,9 @@ class CrmTask {
     }
 
     /**
-     * If this task is directly associated with a CrmContact, it is returned.
-     * Otherwise the first booked attender is returned.
+     * If this task is directly associated with a CrmContact then it is returned.
+     * Otherwise if there is only one attender it is returned.
+     * If task has multiple attenders then null is returned.
      *
      * @return
      */
@@ -322,7 +323,11 @@ class CrmTask {
         if (ref?.startsWith('crmContact@')) {
             return getReference()
         }
-        getAttenders().find { it }?.getContactInformation()
+        def list = getAttenders()
+        if (list.size() == 1) {
+            return list.get(0).getContactInformation()
+        }
+        return null // Multiple attenders, we can't just return a random one.
     }
 
     /**
