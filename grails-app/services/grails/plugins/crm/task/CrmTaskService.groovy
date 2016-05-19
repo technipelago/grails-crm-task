@@ -263,6 +263,16 @@ class CrmTaskService {
         CrmTaskAttenderStatus.findAllByEnabledAndTenantId(true, TenantUtils.tenant)
     }
 
+    CrmTaskAttenderStatus setAttenderStatus(CrmTaskAttender attender, String param) {
+        def status = CrmTaskAttenderStatus.findByParamAndTenantId(param, TenantUtils.tenant, [cache: true])
+        if (status) {
+            attender.status = status
+        } else {
+            log.error("CrmTaskAttenderStatus with param [$param] not found")
+        }
+        attender.status
+    }
+
     CrmTaskAttender addAttender(CrmTask task, CrmContactInformation contact, Object status = null, String notes = null) {
         def booking = createBooking([task: task], true)
         if (booking.hasErrors()) {
@@ -440,7 +450,7 @@ class CrmTaskService {
                     eq('number', SearchUtils.wildcard(query.number))
                 }
             }
-            if(query.status) {
+            if (query.status) {
                 status {
                     or {
                         ilike('name', SearchUtils.wildcard(query.status))
@@ -448,10 +458,10 @@ class CrmTaskService {
                     }
                 }
             }
-            if(query.bookingRef) {
+            if (query.bookingRef) {
                 eq('bookingRef', query.bookingRef)
             }
-            if(query.externalRef) {
+            if (query.externalRef) {
                 eq('externalRef', query.externalRef)
             }
             if (query.fromDate && query.toDate) {
@@ -677,8 +687,6 @@ class CrmTaskService {
             throw new IllegalArgumentException("Property 'task' is not set")
         }
         def m = new CrmTaskBooking(task: crmTask)
-        //def args = [m, params, [include: CrmTaskBooking.BIND_WHITELIST]]
-        //new BindDynamicMethod().invoke(m, 'bind', args.toArray())
 
         grailsWebDataBinder.bind(m, params as SimpleMapDataBindingSource, null, CrmTaskBooking.BIND_WHITELIST, null, null)
 
