@@ -30,6 +30,8 @@ import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.grails.databinding.SimpleMapDataBindingSource
 
+import java.util.regex.Pattern
+
 /**
  * Task management service.
  */
@@ -344,7 +346,11 @@ class CrmTaskService {
         if (query.attender) {
             ids = CrmTaskAttender.createCriteria().list() {
                 projections {
-                    distinct('booking.task.id')
+                    booking {
+                        task {
+                            distinct('id')
+                        }
+                    }
                 }
                 booking {
                     task {
@@ -382,6 +388,14 @@ class CrmTaskService {
             if (query.location) {
                 ilike('location', SearchUtils.wildcard(query.location))
             }
+            if(query.address) {
+                or {
+                    ilike('address.address1', SearchUtils.wildcard(query.address))
+                    ilike('address.address2', SearchUtils.wildcard(query.address))
+                    ilike('address.postalCode', SearchUtils.wildcard(query.address))
+                    ilike('address.city', SearchUtils.wildcard(query.address))
+                }
+            }
             if (query.username) {
                 eq('username', query.username)
             }
@@ -407,29 +421,11 @@ class CrmTaskService {
                 def rt = crmCoreService.getReferenceType(query.referenceType)
                 ilike('ref', rt + '@%')
             }
-            if (query.fromDate && query.toDate) {
-                def timezone = query.timezone ?: TimeZone.getDefault()
-                def d1 = query.fromDate instanceof Date ? query.fromDate : DateUtils.parseDate(query.fromDate, timezone)
-                def d2 = query.toDate instanceof Date ? query.toDate : DateUtils.parseDate(query.toDate, timezone)
-                or {
-                    between('startTime', d1, d2)
-                    between('endTime', d1, d2)
-                }
-            } else if (query.fromDate) {
-                def timezone = query.timezone ?: TimeZone.getDefault()
-                def d1 = query.fromDate instanceof Date ? query.fromDate : DateUtils.parseDate(query.fromDate, timezone)
-                or {
-                    ge('startTime', d1)
-                    gt('endTime', d1)
-                }
-            } else if (query.toDate) {
-                def timezone = query.timezone ?: TimeZone.getDefault()
-                def d2 = query.toDate instanceof Date ? query.toDate : DateUtils.parseDate(query.toDate, timezone)
-                or {
-                    lt('startTime', d2)
-                    le('endTime', d2)
-                }
+
+            if(query.fromDate || query.toDate) {
+                SearchUtils.dateQuery(delegate, query.fromDate, query.toDate, 'startTime', 'endTime', query.timezone ?: TimeZone.getDefault())
             }
+
             if (ids) {
                 inList('id', ids)
             }
@@ -464,19 +460,8 @@ class CrmTaskService {
             if (query.externalRef) {
                 eq('externalRef', query.externalRef)
             }
-            if (query.fromDate && query.toDate) {
-                def timezone = query.timezone ?: TimeZone.getDefault()
-                def d1 = query.fromDate instanceof Date ? query.fromDate : DateUtils.parseDate(query.fromDate, timezone)
-                def d2 = query.toDate instanceof Date ? query.toDate : DateUtils.parseDate(query.toDate, timezone)
-                between('bookingDate', d1, d2)
-            } else if (query.fromDate) {
-                def timezone = query.timezone ?: TimeZone.getDefault()
-                def d1 = query.fromDate instanceof Date ? query.fromDate : DateUtils.parseDate(query.fromDate, timezone)
-                ge('bookingDate', d1)
-            } else if (query.toDate) {
-                def timezone = query.timezone ?: TimeZone.getDefault()
-                def d2 = query.toDate instanceof Date ? query.toDate : DateUtils.parseDate(query.toDate, timezone)
-                le('bookingDate', d2)
+            if(query.fromDate || query.toDate) {
+                SearchUtils.dateQuery(delegate, query.fromDate, query.toDate, 'bookingDate', query.timezone ?: TimeZone.getDefault())
             }
         }
     }

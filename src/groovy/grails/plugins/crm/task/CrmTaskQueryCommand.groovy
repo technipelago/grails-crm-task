@@ -24,6 +24,7 @@ import grails.validation.Validateable
 @Validateable
 class CrmTaskQueryCommand implements Serializable {
 
+    String number
     String name
     String location
     String reference
@@ -35,4 +36,5 @@ class CrmTaskQueryCommand implements Serializable {
     String priority
     String complete
     String tags
+    String address
 }
