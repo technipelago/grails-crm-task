@@ -446,6 +446,10 @@ class CrmTask {
         return target
     }
 
+    transient boolean isActive() {
+        complete == STATUS_ACTIVE
+    }
+
     transient boolean isCompleted() {
         complete == STATUS_COMPLETED
     }
