@@ -18,6 +18,7 @@ package grails.plugins.crm.task
 
 import grails.plugins.crm.core.CrmEmbeddedAddress
 import grails.plugins.crm.contact.CrmContact
+import org.apache.commons.lang.StringUtils
 
 /**
  * A task booking can hold multiple attenders.
@@ -109,7 +110,10 @@ class CrmTaskBooking {
         if (contact) {
             return contact.toString()
         }
-        return ''
+        if(attenders) {
+            return StringUtils.abbreviate(attenders.join(', '), 50)
+        }
+        return '#' + id
     }
 
     private static final List<String> DAO_PROPS = [
