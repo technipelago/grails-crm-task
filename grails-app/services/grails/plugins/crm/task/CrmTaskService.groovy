@@ -388,7 +388,7 @@ class CrmTaskService {
             if (query.location) {
                 ilike('location', SearchUtils.wildcard(query.location))
             }
-            if(query.address) {
+            if (query.address) {
                 or {
                     ilike('address.address1', SearchUtils.wildcard(query.address))
                     ilike('address.address2', SearchUtils.wildcard(query.address))
@@ -422,7 +422,7 @@ class CrmTaskService {
                 ilike('ref', rt + '@%')
             }
 
-            if(query.fromDate || query.toDate) {
+            if (query.fromDate || query.toDate) {
                 SearchUtils.dateQuery(delegate, query.fromDate, query.toDate, 'startTime', 'endTime', query.timezone ?: TimeZone.getDefault())
             }
 
@@ -460,7 +460,7 @@ class CrmTaskService {
             if (query.externalRef) {
                 eq('externalRef', query.externalRef)
             }
-            if(query.fromDate || query.toDate) {
+            if (query.fromDate || query.toDate) {
                 SearchUtils.dateQuery(delegate, query.fromDate, query.toDate, 'bookingDate', query.timezone ?: TimeZone.getDefault())
             }
         }
@@ -657,6 +657,24 @@ class CrmTaskService {
         crmTask.save(flush: true)
         // TODO snooze a day or two?
         crmTask.alarms
+    }
+
+    /**
+     * Return a CrmTaskBooking instance based on its primary key.
+     *
+     * @param id
+     * @param tenant
+     * @return
+     */
+    CrmTaskBooking getTaskBooking(Long id, Long tenant = null) {
+        def a = CrmTaskBooking.get(id)
+        if (a == null) {
+            return null
+        }
+        if (tenant == null) {
+            tenant = TenantUtils.tenant
+        }
+        a.task.tenantId == tenant ? a : null
     }
 
     /**
