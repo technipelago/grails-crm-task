@@ -305,6 +305,7 @@ Previously CrmTaskBooking was optional but since 2.4.2 CrmTaskBooking is mandato
 
 == Changes
 
+2.4.4:: Task attender improvements.
 2.4.3:: Increased CrmTaskAttender.source to 80 characters and renamed Task to Activity
 2.4.2:: Refactored domain hierarchy CrmTask -> CrmTaskBooking -> CrmTaskAttender (database migration!)
 2.4.1:: Tagging support for task attenders
