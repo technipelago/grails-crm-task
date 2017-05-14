@@ -42,8 +42,8 @@ class CrmTaskGrailsPlugin {
             description "Task Management"
             link controller: "crmTask", action: "index"
             permissions {
-                guest "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
-                partner "crmTask:index,list,show,createFavorite,deleteFavorite,clearQuery", "crmCalendar:index,events"
+                guest "crmTask:index,list,show,attenders,createFavorite,deleteFavorite,clearQuery", "crmTaskBooking,crmTaskAttender:show", "crmCalendar:index,events"
+                partner "crmTask:index,list,show,attenders,createFavorite,deleteFavorite,clearQuery", "crmTaskBooking,crmTaskAttender:show", "crmCalendar:index,events"
                 user "crmTask,crmTaskAttender,crmTaskBooking,crmCalendar:*", "crmTaskFilter:*"
                 admin "crmTask,crmTaskCategory,crmTaskStatus,crmTaskType,crmCalendar:*", "crmTaskFilter:*"
                         "crmTaskAttender,crmTaskAttenderStatus,crmTaskBooking:*"
