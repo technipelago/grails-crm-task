@@ -436,14 +436,16 @@ class CrmTaskService {
     def listAttenders(Map query, Map params) {
         def tenant = TenantUtils.tenant
         CrmTaskAttender.createCriteria().list(params) {
-            task {
-                eq('tenantId', tenant)
+            booking {
+                task {
+                    eq('tenantId', tenant)
 
-                if (query.task || query.event) {
-                    eq('id', Long.valueOf(query.task ?: query.event))
-                }
-                if (query.number) {
-                    eq('number', SearchUtils.wildcard(query.number))
+                    if (query.task || query.event) {
+                        eq('id', Long.valueOf(query.task ?: query.event))
+                    }
+                    if (query.number) {
+                        eq('number', SearchUtils.wildcard(query.number))
+                    }
                 }
             }
             if (query.status) {
