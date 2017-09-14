@@ -137,7 +137,7 @@ class CrmTaskBooking {
         final Map<String, Object> map = getSelfProperties(DAO_PROPS)
         map.tenant = task.tenantId
         map.task = taskId
-        map.invoiceAaddress = invoiceAddress?.getDao() ?: [:]
+        map.invoiceAddress = invoiceAddress?.getDao() ?: [:]
         if (contact) {
             map.contact = contact.getDao(false)
         }
