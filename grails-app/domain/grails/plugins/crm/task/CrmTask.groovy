@@ -16,12 +16,7 @@
 
 package grails.plugins.crm.task
 
-import grails.plugins.crm.core.CrmEmbeddedAddress
-import grails.plugins.crm.core.CrmContactInformation
-import grails.plugins.crm.core.TenantEntity
-import grails.plugins.crm.core.AuditEntity
-import grails.plugins.crm.core.TenantUtils
-import grails.plugins.crm.core.UuidEntity
+import grails.plugins.crm.core.*
 import groovy.time.Duration
 import groovy.time.TimeCategory
 import groovy.time.TimeDuration
@@ -242,6 +237,10 @@ class CrmTask {
             } else {
                 alarmTime = startTime
             }
+        }
+
+        if (!name && type) {
+            name = type.name
         }
     }
 
