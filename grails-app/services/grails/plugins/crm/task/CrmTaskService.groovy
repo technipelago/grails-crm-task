@@ -19,7 +19,6 @@ package grails.plugins.crm.task
 import grails.events.Listener
 import grails.plugins.crm.contact.CrmContact
 import grails.plugins.crm.core.CrmContactInformation
-import grails.plugins.crm.core.DateUtils
 import grails.plugins.crm.core.SearchUtils
 import grails.plugins.crm.core.TenantUtils
 import grails.plugins.selection.Selectable
@@ -30,8 +29,6 @@ import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.grails.databinding.SimpleMapDataBindingSource
 
-import java.util.regex.Pattern
-
 /**
  * Task management service.
  */
@@ -40,6 +37,7 @@ class CrmTaskService {
     def grailsApplication
     def crmCoreService
     def crmSecurityService
+    def crmContactService
     def crmTagService
     def messageSource
 
@@ -318,7 +316,16 @@ class CrmTaskService {
     }
 
     List<CrmTaskAttender> findTasksAttended(CrmContact contact, Map params = [:]) {
-        CrmTaskAttender.findAllByContact(contact, params)
+        List<CrmTaskAttender> result = []
+        if (contact.company) {
+            def people = crmContactService.list([primary: contact.id], [:])
+            if (people) {
+                result = CrmTaskAttender.findAllByContactInList(people)
+            }
+        } else {
+            result = CrmTaskAttender.findAllByContact(contact, params)
+        }
+        return result
     }
 
     /**
