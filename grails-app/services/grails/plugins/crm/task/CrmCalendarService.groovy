@@ -30,6 +30,8 @@ import org.joda.time.Years
  */
 class CrmCalendarService {
 
+    CrmEventColorSelector crmEventColorSelector
+
     def findOccurrencesInRange = {CrmTask event, Date rangeStart, Date rangeEnd ->
         def dates = []
 
@@ -53,22 +55,9 @@ class CrmCalendarService {
         dates
     }
 
-    // TODO Remove hard coded magic numbers!
     @CompileStatic
     String getEventColor(final CrmTask event) {
-        def color
-        if(event.priority >= 90) {
-            color = "#c3325f" // Highest
-        } else if(event.priority >= 60) {
-            color = "#f9b936" // High
-        } else if(event.priority >= 40) {
-            color = "#71bf44" // Normal
-        } else if(event.priority >= 20) {
-            color = "#00b6de" // Low
-        } else {
-            color = "#999999" // Lowest
-        }
-        return color
+        crmEventColorSelector.getEventColor(event)
     }
 
     // For repeating event get next occurrence after the specified date

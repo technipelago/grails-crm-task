@@ -15,6 +15,7 @@
  */
 
 import grails.plugins.crm.task.CrmTask
+import grails.plugins.crm.task.DefaultEventColorSelector
 
 class CrmTaskGrailsPlugin {
     def groupId = ""
@@ -46,7 +47,7 @@ class CrmTaskGrailsPlugin {
                 partner "crmTask:index,list,show,attenders,createFavorite,deleteFavorite,clearQuery", "crmTaskBooking,crmTaskAttender:show", "crmCalendar:index,events"
                 user "crmTask,crmTaskAttender,crmTaskBooking,crmCalendar:*", "crmTaskFilter:*"
                 admin "crmTask,crmTaskCategory,crmTaskStatus,crmTaskType,crmCalendar:*", "crmTaskFilter:*"
-                        "crmTaskAttender,crmTaskAttenderStatus,crmTaskBooking:*"
+                "crmTaskAttender,crmTaskAttenderStatus,crmTaskBooking:*"
             }
             statistics { tenant ->
                 def total = CrmTask.countByTenantId(tenant)
@@ -66,6 +67,13 @@ class CrmTaskGrailsPlugin {
                 }
                 return [usage: usage, objects: total]
             }
+        }
+    }
+
+    def doWithSpring = {
+
+        crmEventColorSelector(DefaultEventColorSelector) { bean ->
+            bean.autowire = "byName"
         }
     }
 }
