@@ -46,8 +46,7 @@ class CrmTaskGrailsPlugin {
                 guest "crmTask:index,list,show,attenders,createFavorite,deleteFavorite,clearQuery", "crmTaskBooking,crmTaskAttender:show", "crmCalendar:index,events"
                 partner "crmTask:index,list,show,attenders,createFavorite,deleteFavorite,clearQuery", "crmTaskBooking,crmTaskAttender:show", "crmCalendar:index,events"
                 user "crmTask,crmTaskAttender,crmTaskBooking,crmCalendar:*", "crmTaskFilter:*"
-                admin "crmTask,crmTaskCategory,crmTaskStatus,crmTaskType,crmCalendar:*", "crmTaskFilter:*"
-                "crmTaskAttender,crmTaskAttenderStatus,crmTaskBooking:*"
+                admin "crmTask,crmTaskCategory,crmTaskStatus,crmTaskType,crmCalendar:*", "crmTaskFilter:*", "crmTaskAttender,crmTaskAttenderStatus,crmTaskBooking:*"
             }
             statistics { tenant ->
                 def total = CrmTask.countByTenantId(tenant)
