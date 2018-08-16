@@ -316,16 +316,17 @@ class CrmTaskService {
     }
 
     List<CrmTaskAttender> findTasksAttended(CrmContact contact, Map params = [:]) {
-        List<CrmTaskAttender> result = []
+        List<CrmTaskAttender> result = CrmTaskAttender.findAllByContact(contact, params)
         if (contact.company) {
             def people = crmContactService.list([primary: contact.id], [:])
             if (people) {
-                result = CrmTaskAttender.findAllByContactInList(people)
+                def list = CrmTaskAttender.findAllByContactInList(people, params)
+                if(list) {
+                    result.addAll(list)
+                }
             }
-        } else {
-            result = CrmTaskAttender.findAllByContact(contact, params)
         }
-        return result
+        result.sort{it.bookingDate}
     }
 
     /**
