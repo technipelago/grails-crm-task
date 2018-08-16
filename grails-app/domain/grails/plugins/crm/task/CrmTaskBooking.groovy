@@ -44,7 +44,7 @@ class CrmTaskBooking {
         bookingRef(maxSize: 80, nullable: true)
         bookingDate()
         reserve(nullable: true)
-        comments(maxSize: 2000, nullable: true, widget: 'textarea')
+        comments(maxSize: 4000, nullable: true, widget: 'textarea')
         invoiceAddress(nullable: true)
     }
 

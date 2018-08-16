@@ -131,7 +131,7 @@ class CrmTask {
         location(maxSize: 80, nullable: true)
         address(nullable: true)
 
-        description(nullable: true, maxSize: 2000, widget: 'textarea')
+        description(nullable: true, maxSize: 4000, widget: 'textarea')
         priority(min: PRIORITY_LOWEST, max: PRIORITY_HIGHEST)
         complete(min: STATUS_PLANNED, max: STATUS_COMPLETED)
 
