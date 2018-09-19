@@ -488,6 +488,7 @@ class CrmTask {
     transient Map<String, Object> getDao() {
         final Map<String, Object> map = getSelfProperties(DAO_PROPS)
         map.tenant = tenantId
+        map.id = this.id
         map.address = address?.getDao() ?: [:]
         map.type = type?.getDao() ?: [:]
         return map
