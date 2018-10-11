@@ -96,6 +96,18 @@ class CrmTaskService {
         log.warn("Deleted ${result.size()} tasks in tenant $tenant")
     }
 
+    String getDefaultStartTime() {
+        grailsApplication.config.crm.task.startTime ?: '09:00'
+    }
+
+    String getDefaultEndTime() {
+        grailsApplication.config.crm.task.endTime ?: '10:00'
+    }
+
+    String getDefaultAlarmTime() {
+        grailsApplication.config.crm.task.alarmTime ?: '08:00'
+    }
+
     CrmTaskType getTaskType(String param) {
         CrmTaskType.findByParamAndTenantId(param, TenantUtils.tenant, [cache: true])
     }
