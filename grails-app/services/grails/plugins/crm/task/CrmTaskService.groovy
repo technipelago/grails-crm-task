@@ -19,6 +19,7 @@ package grails.plugins.crm.task
 import grails.events.Listener
 import grails.plugins.crm.contact.CrmContact
 import grails.plugins.crm.core.CrmContactInformation
+import grails.plugins.crm.core.PagedResultList
 import grails.plugins.crm.core.SearchUtils
 import grails.plugins.crm.core.TenantUtils
 import grails.plugins.selection.Selectable
@@ -44,6 +45,8 @@ class CrmTaskService {
     def sessionFactory
 
     def grailsWebDataBinder
+
+    private static final PagedResultList EMPTY_RESULT = new PagedResultList(Collections.emptyList())
 
     @Listener(namespace = "crmTask", topic = "enableFeature")
     def enableFeature(event) {
@@ -756,11 +759,13 @@ class CrmTaskService {
         def tenant = TenantUtils.tenant
         def taskId = query.taskId ?: query.id
         if (!taskId) {
-            return []
+            return EMPTY_RESULT
         }
-        CrmTaskAttender.createCriteria().list(params) {
+        def ids = CrmTaskAttender.createCriteria().list() {
             projections {
-                property 'contact'
+                contact {
+                    distinct('id')
+                }
             }
             isNotNull('contact')
             booking {
@@ -770,6 +775,9 @@ class CrmTaskService {
                 }
             }
         }
+        return ids ? CrmContact.createCriteria().list(params) {
+            inList('id', ids)
+        } : EMPTY_RESULT
     }
 
     /**
@@ -785,11 +793,11 @@ class CrmTaskService {
         def tenant = TenantUtils.tenant
         def taskId = query.taskId ?: query.id
         if (!taskId) {
-            return []
+            return EMPTY_RESULT
         }
-        CrmTaskAttender.createCriteria().list(params) {
-            projections {
-                property 'contact'
+        def ids = CrmTaskAttender.createCriteria().list(params) {
+            contact {
+                distinct('id')
             }
             isNotNull('contact')
             booking {
@@ -802,5 +810,8 @@ class CrmTaskService {
                 inList('param', statuses)
             }
         }
+        return ids ? CrmContact.createCriteria().list(params) {
+            inList('id', ids)
+        } : EMPTY_RESULT
     }
 }
