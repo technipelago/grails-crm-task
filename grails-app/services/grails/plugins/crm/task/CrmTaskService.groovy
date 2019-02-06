@@ -743,4 +743,64 @@ class CrmTaskService {
 
         return m
     }
+
+    /**
+     * Return all contacts that are invited (registered) on the activity (task).
+     *
+     * @param query
+     * @param params
+     * @return
+     */
+    @Selectable
+    def invited(Map query, Map params) {
+        def tenant = TenantUtils.tenant
+        def taskId = query.taskId ?: query.id
+        if(!taskId) {
+            return []
+        }
+        CrmTaskAttender.createCriteria().list(params) {
+            projections {
+                property 'contact'
+            }
+            isNotNull('contact')
+            booking {
+                task {
+                    eq('id', Long.valueOf(taskId))
+                    eq('tenantId', tenant)
+                }
+            }
+        }
+    }
+
+    /**
+     * Return all contacts that attended the activity (task).
+     *
+     * @param query
+     * @param params
+     * @return
+     */
+    @Selectable
+    def attended(Map query, Map params) {
+        def statuses = grailsApplication.config.crm.task.attenders.status.attended ?: ['attended']
+        def tenant = TenantUtils.tenant
+        def taskId = query.taskId ?: query.id
+        if(!taskId) {
+            return []
+        }
+        CrmTaskAttender.createCriteria().list(params) {
+            projections {
+                property 'contact'
+            }
+            isNotNull('contact')
+            booking {
+                task {
+                    eq('id', Long.valueOf(taskId))
+                    eq('tenantId', tenant)
+                }
+            }
+            status {
+                inList('param', statuses)
+            }
+        }
+    }
 }
