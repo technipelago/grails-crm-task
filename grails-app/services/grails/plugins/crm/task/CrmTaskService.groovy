@@ -333,12 +333,12 @@ class CrmTaskService {
             def people = crmContactService.list([primary: contact.id], [:])
             if (people) {
                 def list = CrmTaskAttender.findAllByContactInList(people, params)
-                if(list) {
+                if (list) {
                     result.addAll(list)
                 }
             }
         }
-        result.sort{it.bookingDate}
+        result.sort { it.bookingDate }
     }
 
     /**
@@ -755,7 +755,7 @@ class CrmTaskService {
     def invited(Map query, Map params) {
         def tenant = TenantUtils.tenant
         def taskId = query.taskId ?: query.id
-        if(!taskId) {
+        if (!taskId) {
             return []
         }
         CrmTaskAttender.createCriteria().list(params) {
@@ -784,7 +784,7 @@ class CrmTaskService {
         def statuses = grailsApplication.config.crm.task.attenders.status.attended ?: ['attended']
         def tenant = TenantUtils.tenant
         def taskId = query.taskId ?: query.id
-        if(!taskId) {
+        if (!taskId) {
             return []
         }
         CrmTaskAttender.createCriteria().list(params) {
