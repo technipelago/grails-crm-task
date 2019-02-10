@@ -433,9 +433,19 @@ class CrmTaskService {
             if (query.priority) {
                 eq('priority', Integer.valueOf(query.priority))
             }
+
             if (query.complete) {
                 eq('complete', Integer.valueOf(query.complete))
+            } else if(query.completed) {
+                eq('complete', CrmTask.STATUS_COMPLETED)
+            } else if(query.planned) {
+                eq('complete', CrmTask.STATUS_PLANNED)
+            } else if(query.completed == false) {
+                lt('complete', CrmTask.STATUS_COMPLETED)
+            } else if(query.planned == false) {
+                gt('complete', CrmTask.STATUS_PLANNED)
             }
+
             if (query.reference) {
                 eq('ref', crmCoreService.getReferenceIdentifier(query.reference))
             } else if (query.ref) {
