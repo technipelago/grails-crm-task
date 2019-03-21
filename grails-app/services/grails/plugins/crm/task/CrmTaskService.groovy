@@ -436,13 +436,13 @@ class CrmTaskService {
 
             if (query.complete) {
                 eq('complete', Integer.valueOf(query.complete))
-            } else if(query.completed) {
+            } else if (query.completed) {
                 eq('complete', CrmTask.STATUS_COMPLETED)
-            } else if(query.planned) {
+            } else if (query.planned) {
                 eq('complete', CrmTask.STATUS_PLANNED)
-            } else if(query.completed == false) {
+            } else if (query.completed == false) {
                 lt('complete', CrmTask.STATUS_COMPLETED)
-            } else if(query.planned == false) {
+            } else if (query.planned == false) {
                 gt('complete', CrmTask.STATUS_PLANNED)
             }
 
@@ -823,5 +823,92 @@ class CrmTaskService {
         return ids ? CrmContact.createCriteria().list(params) {
             inList('id', ids)
         } : EMPTY_RESULT
+    }
+
+    def findContactIds(Map query, Map params = [:]) {
+        def tenant = TenantUtils.tenant
+        def result = new LinkedHashSet<String>()
+        def ids = CrmTaskAttender.createCriteria().list() {
+            projections {
+                contact {
+                    distinct('id')
+                }
+            }
+            isNotNull('contact')
+            booking {
+                task {
+                    eq('tenantId', tenant)
+                    if (query.type) {
+                        or {
+                            type {
+                                or {
+                                    ilike('name', SearchUtils.wildcard(query.type))
+                                    eq('param', query.type)
+                                }
+                            }
+                            ilike('number', SearchUtils.wildcard(query.type))
+                        }
+                    }
+
+                    if (query.complete) {
+                        eq('complete', Integer.valueOf(query.complete))
+                    } else if (query.completed) {
+                        eq('complete', CrmTask.STATUS_COMPLETED)
+                    } else if (query.planned) {
+                        eq('complete', CrmTask.STATUS_PLANNED)
+                    } else if (query.completed == false) {
+                        lt('complete', CrmTask.STATUS_COMPLETED)
+                    } else if (query.planned == false) {
+                        gt('complete', CrmTask.STATUS_PLANNED)
+                    }
+                }
+            }
+        }
+        if (ids) {
+            result.addAll(ids)
+        }
+
+        ids = CrmTaskAttender.createCriteria().list() {
+            projections {
+                booking {
+                    task {
+                        distinct('ref')
+                    }
+                }
+            }
+            booking {
+                task {
+                    eq('tenantId', tenant)
+                    ilike('ref', 'crmContact@%')
+                    if (query.type) {
+                        or {
+                            type {
+                                or {
+                                    ilike('name', SearchUtils.wildcard(query.type))
+                                    eq('param', query.type)
+                                }
+                            }
+                            ilike('number', SearchUtils.wildcard(query.type))
+                        }
+                    }
+
+                    if (query.complete) {
+                        eq('complete', Integer.valueOf(query.complete))
+                    } else if (query.completed) {
+                        eq('complete', CrmTask.STATUS_COMPLETED)
+                    } else if (query.planned) {
+                        eq('complete', CrmTask.STATUS_PLANNED)
+                    } else if (query.completed == false) {
+                        lt('complete', CrmTask.STATUS_COMPLETED)
+                    } else if (query.planned == false) {
+                        gt('complete', CrmTask.STATUS_PLANNED)
+                    }
+                }
+            }
+        }.collect { ref -> Long.valueOf(ref.substring(11)) }
+        if (ids) {
+            result.addAll(ids)
+        }
+        return result
     }
 }
