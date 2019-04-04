@@ -113,7 +113,6 @@ class CrmCalendarService {
         nextOccurrence
     }
 
-    @CompileStatic
     private Date findNextDailyOccurrence(CrmTask event, Date afterDate) {
         DateTime nextOccurrence = new DateTime(event.startTime)
 
@@ -125,7 +124,6 @@ class CrmCalendarService {
         nextOccurrence.toDate()
     }
 
-    @CompileStatic
     private Date findNextWeeklyOccurrence(CrmTask event, Date afterDate) {
         int weeksBeforeDate = Weeks.weeksBetween(new DateTime(event.startTime), new DateTime(afterDate)).getWeeks()
         int weekOccurrencesBeforeDate = Math.floor(weeksBeforeDate / event.recurInterval).intValue()
@@ -163,7 +161,6 @@ class CrmCalendarService {
         nextOccurrence.toDate()
     }
 
-    @CompileStatic
     private Date findNextMonthlyOccurrence(CrmTask event, Date afterDate) {
         DateTime nextOccurrence = new DateTime(event.startTime)
 
@@ -174,7 +171,6 @@ class CrmCalendarService {
         nextOccurrence.toDate()
     }
 
-    @CompileStatic
     private Date findNextYearlyOccurrence(CrmTask event, Date afterDate) {
         DateTime nextOccurrence = new DateTime(event.startTime)
 
