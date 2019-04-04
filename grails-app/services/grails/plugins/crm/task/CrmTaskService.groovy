@@ -26,9 +26,14 @@ import grails.plugins.selection.Selectable
 import groovy.time.Duration
 import groovy.time.TimeDuration
 import groovy.transform.CompileStatic
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.FirstParam
 import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.grails.databinding.SimpleMapDataBindingSource
+
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 /**
  * Task management service.
@@ -910,5 +915,53 @@ class CrmTaskService {
             result.addAll(ids)
         }
         return result
+    }
+
+    /**
+     * Generate iCal scheduling item (.ics) for a task.
+     *
+     * @param id the task id
+     * @return VCALENDAR event string
+     */
+    String getIcs(CrmTask task, @ClosureParams(FirstParam) Closure<String> uidGenerator = null) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss")
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+        if(task?.startTime == null || task?.endTime == null) {
+            return null // Can't generate iCal data if no times are specified.
+        }
+        String uid
+        if(uidGenerator != null) {
+            uid = uidGenerator.call(task)
+        } else {
+            uid = "${task.tenantId}-${task.id}-${task.number ?: task.id}-${grailsApplication.metadata['app.name']}"
+        }
+        return """BEGIN:VCALENDAR\r
+VERSION:2.0\r
+PRODID:-//GR8 CRM//${grailsApplication.metadata['app.name']} ${grailsApplication.metadata['app.version']}//EN\r
+METHOD:PUBLISH\r
+BEGIN:VEVENT\r
+SUMMARY:${task.name}\r
+UID:${uid}\r
+SEQUENCE:${task.version}\r
+STATUS:CONFIRMED\r
+TRANSP:${task.busy ? 'OPAQUE' : 'TRANSPARENT'}\r
+DTSTAMP:${dateFormat.format(new Date())}Z\r
+DTSTART:${dateFormat.format(task.startTime)}Z\r
+DTEND:${dateFormat.format(task.endTime)}Z\r
+LOCATION:${task.location ?: ''}\r
+DESCRIPTION:${splitLongText(task.description ?: '', 75)}\r
+END:VEVENT\r
+END:VCALENDAR\r
+"""
+    }
+
+    private String splitLongText(String text, int max) {
+        def strings = []
+        int idx = 0
+        while (idx < text.length()) {
+            strings.add(text.substring(idx, Math.min(idx + max,text.length())));
+            idx += max;
+        }
+        return strings.join('\r\n ')
     }
 }
