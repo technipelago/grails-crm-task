@@ -349,6 +349,36 @@ class CrmTaskService {
         result.sort { it.bookingDate }
     }
 
+    int countBookedAttenders(Long taskId) {
+        List<String> statuses = grailsApplication.config.crm.attender.status.booked ?: ['registered', 'confirmed']
+
+        CrmTaskAttender.createCriteria().count() {
+            status {
+                inList('param', statuses)
+            }
+            booking {
+                task {
+                    eq('id', taskId)
+                }
+            }
+        }
+    }
+
+    int countConfirmedAttenders(Long taskId) {
+        List<String> statuses = grailsApplication.config.crm.attender.status.confirmed ?: ['confirmed']
+
+        CrmTaskAttender.createCriteria().count() {
+            status {
+                inList('param', statuses)
+            }
+            booking {
+                task {
+                    eq('id', taskId)
+                }
+            }
+        }
+    }
+
     /**
      * Empty query = search all records.
      *
