@@ -192,6 +192,14 @@ class CrmTaskService {
         return tombstone
     }
 
+    List<CrmTask> getSubTasks(CrmTask parent, Map params = [:]) {
+        CrmTask.createCriteria().list(params) {
+            eq('tenantId', TenantUtils.tenant)
+            eq('sourceTask', parent)
+            order('startTime', 'asc')
+        }
+    }
+
     String deleteAttender(final CrmTaskAttender crmTaskAttender) {
         final CrmTaskBooking crmTaskBooking = crmTaskAttender.booking
         final CrmTask crmTask = crmTaskBooking.task
