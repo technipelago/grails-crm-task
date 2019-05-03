@@ -194,7 +194,7 @@ class CrmTaskService {
 
     List<CrmTask> getSubTasks(CrmTask parent, Map params = [:]) {
         CrmTask.createCriteria().list(params) {
-            eq('tenantId', TenantUtils.tenant)
+            eq('tenantId', parent.tenantId)
             eq('sourceTask', parent)
             order('startTime', 'asc')
         }
