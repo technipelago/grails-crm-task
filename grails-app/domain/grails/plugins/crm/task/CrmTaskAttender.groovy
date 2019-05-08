@@ -30,7 +30,9 @@ class CrmTaskAttender {
     String bookingRef
     String externalRef
     String source
+    String food
     String notes
+    String bio
     CrmTaskAttenderStatus status
     CrmContact contact // If contact is in our database, this is the attender.
     CrmEmbeddedContact tmp // Embedded contact information if 'contact' is not used.
@@ -46,7 +48,9 @@ class CrmTaskAttender {
         bookingRef(maxSize: 128, nullable: true)
         externalRef(maxSize: 128, nullable: true)
         source(maxSize: 128, nullable: true)
+        food(maxSize: 255, nullable: true)
         notes(maxSize: 4000, nullable: true, widget: 'textarea')
+        bio(maxSize: 4000, nullable: true, widget: 'textarea')
         status()
         tmp(nullable: true)
     }
@@ -62,7 +66,9 @@ class CrmTaskAttender {
             'bookingRef',
             'externalRef',
             'source',
+            'food',
             'notes',
+            'bio',
             'status'
     ]
 
@@ -119,7 +125,9 @@ class CrmTaskAttender {
         map.externalRef = externalRef
         map.source = source
         map.status = status?.param
+        map.food = food
         map.notes = getDescription()
+        map.bio = bio
         map.tags = getTagValue()
 
         map
