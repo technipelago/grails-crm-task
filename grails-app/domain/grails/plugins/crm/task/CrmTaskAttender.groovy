@@ -55,7 +55,7 @@ class CrmTaskAttender {
         tmp(nullable: true)
     }
 
-    static transients = ['contactInformation', 'description']
+    static transients = ['virtualId', 'contactInformation', 'description']
 
     static taggable = true
     static attachmentable = true
@@ -111,6 +111,25 @@ class CrmTaskAttender {
 
     String toString() {
         contactInformation.fullName.toString()
+    }
+
+    transient String getVirtualId() {
+        if(contactId) {
+            return contactId.toString()
+        }
+        if(tmp?.number) {
+            return tmp.number
+        }
+        if(tmp?.email) {
+            return tmp.email
+        }
+        if(tmp?.telephone) {
+            return tmp.telephone
+        }
+        if(id) {
+            return id.toString()
+        }
+        return hashCode().toString()
     }
 
     transient Map<String, Object> getDao() {
