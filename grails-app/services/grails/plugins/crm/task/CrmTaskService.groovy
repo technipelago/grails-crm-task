@@ -619,6 +619,9 @@ class CrmTaskService {
                 alarmType: CrmTask.ALARM_EMAIL) // TODO Other alarm types
         crmTask.setDuration(duration ?: 30)
         crmTask.setReference(reference)
+        if(reference?.hasProperty('username')) {
+            crmTask.username = reference.username
+        }
         // If we create an alarm that was supposed to fire more than a month ago,
         // then we assume it's already completed one alarm.
         def overDue = new Date() - 31
@@ -651,6 +654,9 @@ class CrmTaskService {
                 referenceProperty: referenceProperty, offsetType: offsetType, offset: offset, username: username,
                 alarmType: CrmTask.ALARM_EMAIL, hidden: hidden)
         crmTask.setReference(reference)
+        if(reference?.hasProperty('username')) {
+            crmTask.username = reference.username
+        }
         crmTask.validate() // date is set in beforeValidate()
         if (!crmTask.startTime) {
             throw new IllegalArgumentException("reference time not set for dynamic alarm \"$message\" [$reference]")
