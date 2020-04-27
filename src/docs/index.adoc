@@ -305,6 +305,7 @@ Previously CrmTaskBooking was optional but since 2.4.2 CrmTaskBooking is mandato
 
 == Changes
 
+2.5.0:: Increase length of description/notes to 4000 characters. Add method getIcs() that generates a iCal scheduling item (.ics) for a task
 2.4.5:: Fixed wrong booking association in CrmTaskService#listAttenders() and added missing permissions
 2.4.4:: Task attender improvements.
 2.4.3:: Increased CrmTaskAttender.source to 80 characters and renamed Task to Activity

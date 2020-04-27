@@ -19,7 +19,7 @@ import grails.plugins.crm.task.DefaultEventColorSelector
 
 class CrmTaskGrailsPlugin {
     def groupId = ""
-    def version = "2.4.6-SNAPSHOT"
+    def version = "2.5.0"
     def grailsVersion = "2.4 > *"
     def dependsOn = [:]
     def loadAfter = ['crmTags']
